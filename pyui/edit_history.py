@@ -1,0 +1,251 @@
+import threading
+from time import sleep
+from PyQt5 import QtCore, QtGui, QtWidgets
+import sqlite3
+from . import edit_history_state
+from . import common_functions as cf
+from PyQt5.QtWidgets import QTableWidgetItem, QTableWidget, QMessageBox
+
+s = None
+row_to_edit_history = None
+ex_name_to_edit_history = None
+
+class EditHistoryStateForm(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.ui = edit_history_state.Ui_Form()
+        self.ui.setupUi(self)
+
+class Ui_Form(object):
+
+    # to connect to sqlite and have a cursor
+    con = sqlite3.connect("db.db")
+    cur = con.cursor()
+    ex_names_list = []
+
+    editHistoryStateForm = None
+
+    def edit_history_click(self):
+        if not self.editHistoryStateForm:
+            self.editHistoryStateForm = EditHistoryStateForm()
+        self.editHistoryStateForm.show()
+
+    def ex_names_list_generator(self):
+        self.ex_names_list = self.cur.execute('SELECT name FROM t2').fetchall()
+
+    def warning_dialog(self, message):
+        dialog = QMessageBox()
+        dialog.setText(message)
+        dialog.setWindowTitle('خطا')
+        dialog.setIcon(QMessageBox.Warning)
+        dialog.setStandardButtons(QMessageBox.Ok)
+        dialog.exec_()
+
+    def fill_table(self):
+        try:
+            self.tableWidget.itemChanged.disconnect()
+            self.tableWidget.itemSelectionChanged.disconnect()
+        except:
+            pass
+
+        # to clear tableWidget
+        self.tableWidget.setRowCount(0)
+
+        self.cur.execute('SELECT * FROM t2')
+        res = self.cur.fetchall()
+        self.tableWidget.setRowCount(len(res))
+        for i in range(0, len(res)):
+            if res[i][3] == '01':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('ورود کالای بسته بندی نشده'))
+            elif res[i][3] == '12':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('انجام بسته بندی'))
+            elif res[i][3] == '23':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('فروش'))
+            elif len(res[i][3]) == 3 and res[i][3][2] == '0':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری'))
+            elif len(res[i][3]) == 3 and res[i][3][2] == '1':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد'))
+            elif len(res[i][3]) == 3 and res[i][3][2] == '2':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('معیوب'))
+            elif len(res[i][3]) == 3 and res[i][3][2] == '3':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع'))
+            self.tableWidget.setItem(i, 1, QTableWidgetItem(res[i][0]))
+            self.tableWidget.setItem(i, 2, QTableWidgetItem(res[i][1]))
+            self.tableWidget.setItem(i, 3, QTableWidgetItem(res[i][2]))
+            self.tableWidget.setItem(i, 4, QTableWidgetItem(res[i][5]))
+            self.tableWidget.setItem(i, 5, QTableWidgetItem(res[i][4]))
+        self.tableWidget.itemChanged.connect(self.item_edited)
+        self.tableWidget.itemSelectionChanged.connect(self.state_selection)
+
+    def delete_dialog_clicked(self, dbutton):
+        if dbutton.text() == 'OK':
+            row = self.tableWidget.currentRow()
+            ex_name = self.ex_names_list[row][0]
+            res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
+
+            # deleting selected row and save it in reslist as a list instead of tuple
+            reslist = []
+            for i in range(0, len(res)):
+                if i != row:
+                    rescol = []
+                    for j in res[i]:
+                        rescol.append(j)
+                    reslist.append(rescol)
+
+            rowId = res[row][0]
+
+            if cf.check_conflict(reslist, ex_name):
+                self.cur.execute("DELETE FROM t2 WHERE ROWID=?", (rowId,))
+                self.con.commit()
+                self.fill_table()
+            else:
+                self.warning_dialog('با حذف این سطر از تاریخچه، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به حذف کردن این سطر نیستید.')
+
+    def delete_clicked(self):
+        row_count = int(len(self.tableWidget.selectedIndexes())/6)
+        if row_count == 1:
+            dialog = QMessageBox()
+            dialog.setText('از حذف کردن سطر انتخاب شده مطمئن هستید؟')
+            dialog.setWindowTitle('Delete warning')
+            dialog.setIcon(QMessageBox.Warning)
+            dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+            dialog.buttonClicked.connect(self.delete_dialog_clicked)
+            dialog.exec_()
+        elif row_count > 1:
+            self.warning_dialog('در هر نوبت فقط میتوانید یک سطر را حذف کنید.')
+        else:
+            self.warning_dialog('ابتدا سطری که میخواهید حذف کنید را انتخاب کنید.')
+
+    def state_selection(self):
+        row = self.tableWidget.currentRow()
+        column = self.tableWidget.currentColumn()
+        if column == 0:
+            ex_name = self.ex_names_list[row][0]
+            res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
+
+            # converting res to list instead of tuple
+            reslist = []
+            for i in range(0, len(res)):
+                rescol = []
+                for j in res[i]:
+                    rescol.append(j)
+                reslist.append(rescol)
+
+            global row_to_edit_history, ex_name_to_edit_history
+            row_to_edit_history = row
+            ex_name_to_edit_history = ex_name
+            self.edit_history_click()
+    
+    def item_edited(self, item):
+        row = item.row()
+        column = item.column()
+        ex_name = self.ex_names_list[row][0]
+        res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
+        rowId = res[row][0]
+
+        # converting res to list instead of tuple
+        reslist = []
+        for i in range(0, len(res)):
+            rescol = []
+            for j in res[i]:
+                rescol.append(j)
+            reslist.append(rescol)
+
+        if column == 1:
+            reslist[row][1] = item.text()
+            if cf.check_conflict(reslist, item.text()) and cf.check_conflict(reslist, ex_name):
+                self.cur.execute("UPDATE t2 SET name=? WHERE ROWID=?", (item.text(), rowId,))
+                self.con.commit()
+                self.fill_table()
+            else:
+                self.warning_dialog('با تغییر نام کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر نام کالا نیستید.')
+                self.fill_table()
+        elif column == 2:
+            reslist[row][2] = item.text()
+            if item.text().isnumeric() and cf.check_conflict(reslist, ex_name):
+                self.cur.execute("UPDATE t2 SET count=? WHERE ROWID=?", (item.text(), rowId,))
+                self.con.commit()
+                self.fill_table()
+            else:
+                self.warning_dialog('با تغییر تعداد کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر تعداد کالا نیستید.')
+                self.fill_table()
+        elif column == 3:# todo: sorting date
+            self.warning_dialog('ویرایش تاریخ در این ورژن از برنامه در دسترس نیست.')
+            self.fill_table()
+            return
+            reslist[row][3] = item.text()
+            edited_row = reslist[row]
+            del reslist[row]
+            cf.insert_row_to_history(reslist, edited_row)
+            if cf.date_validator(item.text()) and cf.check_conflict(reslist, ex_name):
+                self.cur.execute("UPDATE t2 SET date=? WHERE ROWID=?", (item.text(), rowId,))
+                self.con.commit()
+                self.fill_table()
+            else:
+                self.warning_dialog('با تغییر این تاریخ، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر این تاریخ نیستید.')
+                self.fill_table()
+        elif column == 4:
+            if item.text().isnumeric():
+                self.cur.execute("UPDATE t2 SET factor=? WHERE ROWID=?", (item.text(), rowId,))
+                self.con.commit()
+                self.fill_table()
+            else:
+                self.warning_dialog('شماره فاکتور باید متشکل از اعداد باشد.\nدوباره تلاش کنید.')
+                self.fill_table()
+        else:
+            if item.text().isnumeric():
+                self.cur.execute("UPDATE t2 SET price=? WHERE ROWID=?", (item.text(), rowId,))
+                self.con.commit()
+                self.fill_table()
+            else:
+                self.warning_dialog('قیمت باید متشکل از اعداد باشد.\nدوباره تلاش کنید.')
+                self.fill_table()
+
+
+    def setupUi(self, Form):
+        global s
+        s = self
+        Form.setObjectName("Form")
+        Form.setFixedSize(600, 506)
+        self.tableWidget = QtWidgets.QTableWidget(Form)
+        self.tableWidget.setGeometry(QtCore.QRect(0, 0, 601, 471))
+        self.tableWidget.setAlternatingRowColors(False)
+        self.tableWidget.setObjectName("tableWidget")
+        self.tableWidget.setColumnCount(6)
+        self.tableWidget.setRowCount(0)
+        header = self.tableWidget.horizontalHeader()
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(3, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(4, QtWidgets.QHeaderView.ResizeToContents)
+        header.setSectionResizeMode(5, QtWidgets.QHeaderView.ResizeToContents)
+        self.tableWidget.horizontalHeader().setCascadingSectionResizes(False)
+        self.tableWidget.horizontalHeader().setDefaultSectionSize(95)
+        self.tableWidget.verticalHeader().setCascadingSectionResizes(False)
+        self.pushButton = QtWidgets.QPushButton(Form)
+        self.pushButton.setGeometry(QtCore.QRect(0, 470, 602, 37))
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.pushButton.setFont(font)
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.delete_clicked)
+
+        self.retranslateUi(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)
+
+    def retranslateUi(self, Form):
+        _translate = QtCore.QCoreApplication.translate
+        Form.setWindowTitle(_translate("Form", "ویرایش تاریخچه"))
+        self.tableWidget.setHorizontalHeaderLabels(['عملیات', 'اسم کالا', 'تعداد', 'تاریخ', 'شماره فاکتور', 'قیمت'])
+        self.pushButton.setText(_translate("Form", "حذف"))
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    Form = QtWidgets.QWidget()
+    ui = Ui_Form()
+    ui.setupUi(Form)
+    Form.show()
+    sys.exit(app.exec_())
