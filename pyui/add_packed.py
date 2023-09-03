@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from . import common_functions as cf
 from PyQt5 import QtCore, QtGui, QtWidgets
 import jdatetime
 import sqlite3
@@ -88,33 +88,26 @@ class Ui_Form(object):
             for t in text_array:
                 text += t + ' '
             text = text[0:len(text) - 1]
-            self.cur.execute("SELECT packed_count, unpacked_count FROM t1 WHERE name=?", (text,))
-            fetchone = self.cur.fetchone()
+            fetchone = self.cur.execute("SELECT packed_count, unpacked_count FROM t1 WHERE name=?", (text,)).fetchone()
             packed_count = str(int(fetchone[0]) + int(self.count_inpt.text()))
             unpacked_count = str(int(fetchone[1]) - int(self.count_inpt.text()))
-            data1 = (text, self.count_inpt.text(), self.date_inpt.text(), '12', None, None)
-            data2 = (packed_count, unpacked_count, text)
-            # if int(fetchone[1]) >= int(self.count_inpt.text()):
-            self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data1)
-            self.cur.execute("UPDATE t1 SET packed_count=?, unpacked_count=? WHERE name=?", data2)
-            self.con.commit()
-            mw.Ui_MainWindow.status_lbl(mw.s)
-            self.search_recommendation()
-            # else:
-            #     dialog = QMessageBox()
-            #     dialog.setText('تعداد کالاهای بسته بندی نشده این محصول کافی نیست.')
-            #     dialog.setWindowTitle('خطا')
-            #     dialog.setIcon(QMessageBox.Information)
-            #     dialog.setStandardButtons(QMessageBox.Ok)
-            #     dialog.exec_()
+
+            data = (text, self.count_inpt.text(), self.date_inpt.text(), '12', None, None)
+            self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data)
+            history = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
+            
+            if cf.check_conflict(history, text):
+                data = (packed_count, unpacked_count, text)
+                self.cur.execute("UPDATE t1 SET packed_count=?, unpacked_count=? WHERE name=?", data)
+                self.con.commit()
+                mw.Ui_MainWindow.status_lbl(mw.s)
+                self.search_recommendation()
+            else:
+                self.con.rollback()
+                cf.warning_dialog('تعداد کالاهای بسته بندی نشده این محصول کافی نیست.')
             self.item_text = ''
         else:
-            dialog = QMessageBox()
-            dialog.setText('اطلاعات وارد شده معتبر نیست.')
-            dialog.setWindowTitle('خطا')
-            dialog.setIcon(QMessageBox.Information)
-            dialog.setStandardButtons(QMessageBox.Ok)
-            dialog.exec_()
+            cf.warning_dialog('اطلاعات وارد شده معتبر نیست.')
         self.name_inpt.clear()
         self.count_inpt.setValue(1)
         self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))

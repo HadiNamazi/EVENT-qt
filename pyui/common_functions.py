@@ -1,4 +1,5 @@
 import sqlite3
+from PyQt5.QtWidgets import QMessageBox
 
 # to connect to sqlite and have a cursor
 con = sqlite3.connect("db.db", check_same_thread=False)
@@ -12,55 +13,55 @@ def history_tracker(history):
     unpacked_returned = 0
 
     for i in history:
-        if i[4] == '01':
-            unpacked += int(i[2])
-        elif i[4] == '12':
-            if int(i[2]) > unpacked:
+        if i[3] == '01':
+            unpacked += int(i[1])
+        elif i[3] == '12':
+            if int(i[1]) > unpacked:
                 return False
-            unpacked -= int(i[2])
-            packed += int(i[2])
-        elif i[4] == '23':
-            if int(i[2]) > packed:
+            unpacked -= int(i[1])
+            packed += int(i[1])
+        elif i[3] == '23':
+            if int(i[1]) > packed:
                 return False
-            packed -= int(i[2])
-            sold += int(i[2])
-        elif i[4][2] == '0':  # kasri
-            if i[4][0] == '1':
-                if int(i[2]) > unpacked:
+            packed -= int(i[1])
+            sold += int(i[1])
+        elif i[3][2] == '0':  # kasri
+            if i[3][0] == '1':
+                if int(i[1]) > unpacked:
                     return False
-                unpacked -= int(i[2])
-            if i[4][0] == '2':
-                if int(i[2]) > packed:
+                unpacked -= int(i[1])
+            if i[3][0] == '2':
+                if int(i[1]) > packed:
                     return False
-                packed -= int(i[2])
-            if i[4][0] == '3':
-                if int(i[2]) > sold:
+                packed -= int(i[1])
+            if i[3][0] == '3':
+                if int(i[1]) > sold:
                     return False
-                sold -= int(i[2])
-        elif i[4][2] == '1':  # mazad
-            if i[4][0] == '1':
-                unpacked += int(i[2])
-            elif i[4][0] == '2':
-                packed += int(i[2])
-            elif i[4][0] == '3':
-                sold += int(i[2])
-        elif i[4][2] == '2':  # defective
-            if int(i[2]) > unpacked:
+                sold -= int(i[1])
+        elif i[3][2] == '1':  # mazad
+            if i[3][0] == '1':
+                unpacked += int(i[1])
+            elif i[3][0] == '2':
+                packed += int(i[1])
+            elif i[3][0] == '3':
+                sold += int(i[1])
+        elif i[3][2] == '2':  # defective
+            if int(i[1]) > unpacked:
                 return False
-            unpacked -= int(i[2])
-            defective += int(i[2])
-        elif i[4][2] == '2':  # returned_unpacked
-            if int(i[2]) > defective:
+            unpacked -= int(i[1])
+            defective += int(i[1])
+        elif i[3][2] == '2':  # returned_unpacked
+            if int(i[1]) > defective:
                 return False
-            unpacked -= int(i[2])
-            unpacked_returned += int(i[2])
+            unpacked -= int(i[1])
+            unpacked_returned += int(i[1])
     return True
 
 def history_limiter(history, name):
     # filtering history by name
     limited_history = []
     for i in history:
-        if i[1] == name:
+        if i[0] == name:
             limited_history.append(i)
     return limited_history
 
@@ -96,3 +97,11 @@ def date_validator(date):
             if splitted_date[2] <= 29:
                 return True
     return False
+
+def warning_dialog(message):
+        dialog = QMessageBox()
+        dialog.setText(message)
+        dialog.setWindowTitle('خطا')
+        dialog.setIcon(QMessageBox.Warning)
+        dialog.setStandardButtons(QMessageBox.Ok)
+        dialog.exec_()

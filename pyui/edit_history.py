@@ -33,14 +33,6 @@ class Ui_Form(object):
     def ex_names_list_generator(self):
         self.ex_names_list = self.cur.execute('SELECT name FROM t2').fetchall()
 
-    def warning_dialog(self, message):
-        dialog = QMessageBox()
-        dialog.setText(message)
-        dialog.setWindowTitle('خطا')
-        dialog.setIcon(QMessageBox.Warning)
-        dialog.setStandardButtons(QMessageBox.Ok)
-        dialog.exec_()
-
     def fill_table(self):
         try:
             self.tableWidget.itemChanged.disconnect()
@@ -99,7 +91,7 @@ class Ui_Form(object):
                 self.con.commit()
                 self.fill_table()
             else:
-                self.warning_dialog('با حذف این سطر از تاریخچه، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به حذف کردن این سطر نیستید.')
+                cf.warning_dialog('با حذف این سطر از تاریخچه، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به حذف کردن این سطر نیستید.')
 
     def delete_clicked(self):
         row_count = int(len(self.tableWidget.selectedIndexes())/6)
@@ -112,9 +104,9 @@ class Ui_Form(object):
             dialog.buttonClicked.connect(self.delete_dialog_clicked)
             dialog.exec_()
         elif row_count > 1:
-            self.warning_dialog('در هر نوبت فقط میتوانید یک سطر را حذف کنید.')
+            cf.warning_dialog('در هر نوبت فقط میتوانید یک سطر را حذف کنید.')
         else:
-            self.warning_dialog('ابتدا سطری که میخواهید حذف کنید را انتخاب کنید.')
+            cf.warning_dialog('ابتدا سطری که میخواهید حذف کنید را انتخاب کنید.')
 
     def state_selection(self):
         row = self.tableWidget.currentRow()
@@ -158,7 +150,7 @@ class Ui_Form(object):
                 self.con.commit()
                 self.fill_table()
             else:
-                self.warning_dialog('با تغییر نام کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر نام کالا نیستید.')
+                cf.warning_dialog('با تغییر نام کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر نام کالا نیستید.')
                 self.fill_table()
         elif column == 2:
             reslist[row][2] = item.text()
@@ -167,10 +159,10 @@ class Ui_Form(object):
                 self.con.commit()
                 self.fill_table()
             else:
-                self.warning_dialog('با تغییر تعداد کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر تعداد کالا نیستید.')
+                cf.warning_dialog('با تغییر تعداد کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر تعداد کالا نیستید.')
                 self.fill_table()
         elif column == 3:# todo: sorting date
-            self.warning_dialog('ویرایش تاریخ در این ورژن از برنامه در دسترس نیست.')
+            cf.warning_dialog('ویرایش تاریخ در این ورژن از برنامه در دسترس نیست.')
             self.fill_table()
             return
             reslist[row][3] = item.text()
@@ -182,7 +174,7 @@ class Ui_Form(object):
                 self.con.commit()
                 self.fill_table()
             else:
-                self.warning_dialog('با تغییر این تاریخ، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر این تاریخ نیستید.')
+                cf.warning_dialog('با تغییر این تاریخ، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر این تاریخ نیستید.')
                 self.fill_table()
         elif column == 4:
             if item.text().isnumeric():
@@ -190,7 +182,7 @@ class Ui_Form(object):
                 self.con.commit()
                 self.fill_table()
             else:
-                self.warning_dialog('شماره فاکتور باید متشکل از اعداد باشد.\nدوباره تلاش کنید.')
+                cf.warning_dialog('شماره فاکتور باید متشکل از اعداد باشد.\nدوباره تلاش کنید.')
                 self.fill_table()
         else:
             if item.text().isnumeric():
@@ -198,7 +190,7 @@ class Ui_Form(object):
                 self.con.commit()
                 self.fill_table()
             else:
-                self.warning_dialog('قیمت باید متشکل از اعداد باشد.\nدوباره تلاش کنید.')
+                cf.warning_dialog('قیمت باید متشکل از اعداد باشد.\nدوباره تلاش کنید.')
                 self.fill_table()
 
 
