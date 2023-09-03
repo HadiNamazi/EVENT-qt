@@ -7,7 +7,7 @@ from . import common_functions as cf
 from PyQt5.QtWidgets import QTableWidgetItem, QTableWidget, QMessageBox
 
 s = None
-row_to_edit_history = None
+rowId_to_edit_history = None
 ex_name_to_edit_history = None
 
 class EditHistoryStateForm(QtWidgets.QWidget):
@@ -74,23 +74,17 @@ class Ui_Form(object):
             row = self.tableWidget.currentRow()
             ex_name = self.ex_names_list[row][0]
             res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
+            rowIds = self.cur.execute("SELECT ROWID FROM t2").fetchall()
+            rowId = rowIds[row][0]
 
-            # deleting selected row and save it in reslist as a list instead of tuple
-            reslist = []
-            for i in range(0, len(res)):
-                if i != row:
-                    rescol = []
-                    for j in res[i]:
-                        rescol.append(j)
-                    reslist.append(rescol)
-
-            rowId = res[row][0]
-
+            self.cur.execute("DELETE FROM t2 WHERE ROWID=?", (rowId,))
+            reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
             if cf.check_conflict(reslist, ex_name):
-                self.cur.execute("DELETE FROM t2 WHERE ROWID=?", (rowId,))
                 self.con.commit()
+                cf.update_t1(ex_name)
                 self.fill_table()
             else:
+                self.con.rollback()
                 cf.warning_dialog('با حذف این سطر از تاریخچه، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به حذف کردن این سطر نیستید.')
 
     def delete_clicked(self):
@@ -111,70 +105,56 @@ class Ui_Form(object):
     def state_selection(self):
         row = self.tableWidget.currentRow()
         column = self.tableWidget.currentColumn()
+        rowIds = self.cur.execute("SELECT ROWID FROM t2").fetchall()
+        rowId = rowIds[row][0]
         if column == 0:
             ex_name = self.ex_names_list[row][0]
-            res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
-
-            # converting res to list instead of tuple
-            reslist = []
-            for i in range(0, len(res)):
-                rescol = []
-                for j in res[i]:
-                    rescol.append(j)
-                reslist.append(rescol)
-
-            global row_to_edit_history, ex_name_to_edit_history
-            row_to_edit_history = row
+            global rowId_to_edit_history, ex_name_to_edit_history
+            rowId_to_edit_history = rowId
             ex_name_to_edit_history = ex_name
             self.edit_history_click()
     
     def item_edited(self, item):
+        self.ex_names_list_generator()
         row = item.row()
         column = item.column()
         ex_name = self.ex_names_list[row][0]
-        res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
-        rowId = res[row][0]
-
-        # converting res to list instead of tuple
-        reslist = []
-        for i in range(0, len(res)):
-            rescol = []
-            for j in res[i]:
-                rescol.append(j)
-            reslist.append(rescol)
+        rowIds = self.cur.execute("SELECT ROWID FROM t2").fetchall()
+        rowId = rowIds[row][0]
 
         if column == 1:
-            reslist[row][1] = item.text()
+            self.cur.execute("UPDATE t2 SET name=? WHERE ROWID=?", (item.text(), rowId,))
+            reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
             if cf.check_conflict(reslist, item.text()) and cf.check_conflict(reslist, ex_name):
-                self.cur.execute("UPDATE t2 SET name=? WHERE ROWID=?", (item.text(), rowId,))
                 self.con.commit()
+                cf.update_t1(item.text())
+                cf.update_t1(ex_name)
                 self.fill_table()
             else:
                 cf.warning_dialog('با تغییر نام کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر نام کالا نیستید.')
+                self.con.rollback()
                 self.fill_table()
         elif column == 2:
-            reslist[row][2] = item.text()
+            self.cur.execute("UPDATE t2 SET count=? WHERE ROWID=?", (item.text(), rowId,))
+            reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
             if item.text().isnumeric() and cf.check_conflict(reslist, ex_name):
-                self.cur.execute("UPDATE t2 SET count=? WHERE ROWID=?", (item.text(), rowId,))
                 self.con.commit()
+                cf.update_t1(ex_name)
                 self.fill_table()
             else:
                 cf.warning_dialog('با تغییر تعداد کالا، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر تعداد کالا نیستید.')
+                self.con.rollback()
                 self.fill_table()
-        elif column == 3:# todo: sorting date
-            cf.warning_dialog('ویرایش تاریخ در این ورژن از برنامه در دسترس نیست.')
-            self.fill_table()
-            return
-            reslist[row][3] = item.text()
-            edited_row = reslist[row]
-            del reslist[row]
-            cf.insert_row_to_history(reslist, edited_row)
-            if cf.date_validator(item.text()) and cf.check_conflict(reslist, ex_name):
-                self.cur.execute("UPDATE t2 SET date=? WHERE ROWID=?", (item.text(), rowId,))
+        elif column == 3:
+            revised_date = cf.date_format_reviser(item.text())
+            self.cur.execute("UPDATE t2 SET date=? WHERE ROWID=?", (revised_date, rowId,))
+            reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
+            if cf.date_validator(revised_date) and cf.check_conflict(reslist, ex_name):
                 self.con.commit()
                 self.fill_table()
             else:
                 cf.warning_dialog('با تغییر این تاریخ، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر این تاریخ نیستید.')
+                self.con.rollback()
                 self.fill_table()
         elif column == 4:
             if item.text().isnumeric():

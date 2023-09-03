@@ -1,5 +1,6 @@
 import sqlite3
 from PyQt5.QtWidgets import QMessageBox
+from . import main_window as mw
 
 # to connect to sqlite and have a cursor
 con = sqlite3.connect("db.db", check_same_thread=False)
@@ -50,7 +51,7 @@ def history_tracker(history):
                 return False
             unpacked -= int(i[1])
             defective += int(i[1])
-        elif i[3][2] == '2':  # returned_unpacked
+        elif i[3][2] == '3':  # returned_unpacked
             if int(i[1]) > defective:
                 return False
             unpacked -= int(i[1])
@@ -114,3 +115,48 @@ def date_format_reviser(date):
             d = '0' + d
         revised_date += d + '/'
     return revised_date[:-1]
+
+def update_t1(name):
+    history = cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
+    limited_history = history_limiter(history, name)
+
+    unpacked = 0
+    packed = 0
+    sold = 0
+    defective = 0
+    unpacked_returned = 0
+
+    for i in limited_history:
+        if i[3] == '01':
+            unpacked += int(i[1])
+        elif i[3] == '12':
+            unpacked -= int(i[1])
+            packed += int(i[1])
+        elif i[3] == '23':
+            packed -= int(i[1])
+            sold += int(i[1])
+        elif i[3][2] == '0':  # kasri
+            if i[3][0] == '1':
+                unpacked -= int(i[1])
+            if i[3][0] == '2':
+                packed -= int(i[1])
+            if i[3][0] == '3':
+                sold -= int(i[1])
+        elif i[3][2] == '1':  # mazad
+            if i[3][0] == '1':
+                unpacked += int(i[1])
+            elif i[3][0] == '2':
+                packed += int(i[1])
+            elif i[3][0] == '3':
+                sold += int(i[1])
+        elif i[3][2] == '2':  # defective
+            unpacked -= int(i[1])
+            defective += int(i[1])
+        elif i[3][2] == '3':  # returned_unpacked
+            unpacked -= int(i[1])
+            unpacked_returned += int(i[1])
+
+    cur.execute("UPDATE t1 SET unpacked_count=?, packed_count=?, sold_count=?, defective_count=? WHERE name=?",
+                (str(unpacked), str(packed), str(sold), str(defective), name,))
+    con.commit()
+    mw.Ui_MainWindow.status_lbl(mw.s)

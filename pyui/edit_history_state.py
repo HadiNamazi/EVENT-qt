@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from . import  edit_history as eh
+from . import common_functions as cf
 import sqlite3
 
 
@@ -13,7 +14,7 @@ class Ui_Form(object):
         comboState = self.state_combo.currentText()
         dbState = ''
         ex_name = eh.ex_name_to_edit_history
-        row = eh.row_to_edit_history
+        rowId = eh.rowId_to_edit_history
 
         if comboState == 'ورود کالای بسته بندی نشده':
             dbState = '01'
@@ -38,23 +39,15 @@ class Ui_Form(object):
         elif comboState == 'مازاد فروخته شده':
             dbState = '331'
 
-        # converting res to list instead of tuple
-        res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
-        rowId = res[row][0]
-        reslist = []
-        for i in range(0, len(res)):
-            rescol = []
-            for j in res[i]:
-                rescol.append(j)
-            reslist.append(rescol)
-
-        reslist[row][4] = dbState
-        if eh.s.check_conflict(reslist, ex_name):
-            self.cur.execute("UPDATE t2 SET action=? WHERE ROWID=?", (dbState, rowId,))
+        self.cur.execute("UPDATE t2 SET action=? WHERE ROWID=?", (dbState, rowId,))
+        reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
+        if cf.check_conflict(reslist, ex_name):
             self.con.commit()
+            cf.update_t1(ex_name)
             eh.s.fill_table()
         else:
-            eh.s.warning_dialog('با تغییر این عملیات، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر این عملیات نیستید.')
+            cf.warning_dialog('با تغییر این عملیات، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر این عملیات نیستید.')
+            self.con.rollback()
             eh.s.fill_table()
 
     def setupUi(self, Form):
