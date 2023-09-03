@@ -65,24 +65,9 @@ class Ui_Form(object):
         self.item_text = item.text()
         self.name_inpt.setText(item.text())
 
-    def date_validator(self, date):
-        splitted_date_str = date.split('/')
-        splitted_date = [int(i) for i in splitted_date_str]
-
-        if splitted_date[0] > 1400 and splitted_date[1] >= 1 and splitted_date[1] <= 12 and splitted_date[2] >= 1:
-            if splitted_date[1] <= 6:  # 31day
-                if splitted_date[2] <= 31:
-                    return True
-            elif splitted_date[1] >= 7 and splitted_date[2] <= 11:  # 30day
-                if splitted_date[2] <= 30:
-                    return True
-            else:  # 29day
-                if splitted_date[2] <= 29:
-                    return True
-        return False
-
     def btn_clicked(self):
-        if self.item_text != '' and self.count_inpt.text() != '' and self.date_validator(self.date_inpt.text()):
+        self.date_inpt.setText(cf.date_format_reviser(self.date_inpt.text()))
+        if self.item_text != '' and self.count_inpt.text() != '' and cf.date_validator(self.date_inpt.text()):
             text_array = self.item_text.split()[2:]
             text = ''
             for t in text_array:

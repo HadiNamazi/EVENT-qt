@@ -105,3 +105,12 @@ def warning_dialog(message):
         dialog.setIcon(QMessageBox.Warning)
         dialog.setStandardButtons(QMessageBox.Ok)
         dialog.exec_()
+
+def date_format_reviser(date):
+    splitted_date = date.split('/')
+    revised_date = ''
+    for d in splitted_date:
+        if len(d) == 1:
+            d = '0' + d
+        revised_date += d + '/'
+    return revised_date[:-1]

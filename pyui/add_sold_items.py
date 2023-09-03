@@ -68,25 +68,10 @@ class Ui_Form(object):
         self.item_text = item.text()
         self.name_inpt.setText(item.text())
 
-    def date_validator(self, date):
-        splitted_date_str = date.split('/')
-        splitted_date = [int(i) for i in splitted_date_str]
-
-        if splitted_date[0] > 1400 and splitted_date[1] >= 1 and splitted_date[1] <= 12 and splitted_date[2] >= 1:
-            if splitted_date[1] <= 6:  # 31day
-                if splitted_date[2] <= 31:
-                    return True
-            elif splitted_date[1] >= 7 and splitted_date[2] <= 11:  # 30day
-                if splitted_date[2] <= 30:
-                    return True
-            else:  # 29day
-                if splitted_date[2] <= 29:
-                    return True
-        return False
-
     def btn_clicked(self):
         # TODO: price, factor validate shan
-        if self.item_text != '' and self.count_inpt.text() != '' and self.date_validator(self.date_inpt.text()):
+        self.date_inpt.setText(cf.date_format_reviser(self.date_inpt.text()))
+        if self.item_text != '' and self.count_inpt.text() != '' and cf.date_validator(self.date_inpt.text()) and self.price_inpt.text().isnumeric() and self.factor_inpt.text().isnumeric():
             text_array = self.item_text.split()[2:]
             text = ''
             for t in text_array:
@@ -119,6 +104,22 @@ class Ui_Form(object):
 
     def onEnter(self):
         pass
+
+    # def separator(self):
+    #     self.price_inpt.textChanged.disconnect()
+    #     current_text = self.price_inpt.text()
+    #     plain_current_text = current_text.replace(',', '')
+    #     new_text = plain_current_text
+    #     # if len(plain_current_text) % 3 == 1 and len(plain_current_text) != 1:
+    #     #     new_text = current_text[:-3] + ',' + current_text[-3:]
+    #     #     self.price_inpt.setText(new_text)
+    #     for i in reversed(range(len(plain_current_text))):
+    #         if len(plain_current_text) % 3 == 0 and len(plain_current_text) != 0:
+    #             new_text = new_text[:len(plain_current_text)-i] + ',' + new_text[len(plain_current_text)-i:]
+    #     if len(plain_current_text) <= 3:
+    #         new_text = plain_current_text
+    #     self.price_inpt.setText(new_text)
+    #     self.price_inpt.textChanged.connect(self.separator)
 
     def setupUi(self, Form):
         global s
@@ -158,6 +159,7 @@ class Ui_Form(object):
         self.factor_inpt.setGeometry(QtCore.QRect(240, 70, 101, 31))
         self.factor_inpt.setObjectName("factor_inpt")
         self.price_inpt = QtWidgets.QLineEdit(Form)
+        # self.price_inpt.textChanged.connect(self.separator)
         self.price_inpt.setGeometry(QtCore.QRect(40, 70, 191, 31))
         self.price_inpt.setObjectName("price_inpt")
         self.search_recommendation()
