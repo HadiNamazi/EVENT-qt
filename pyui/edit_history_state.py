@@ -23,9 +23,9 @@ class Ui_Form(object):
         elif comboState == 'فروش':
             dbState = '23'
         elif comboState == 'معیوب':
-            dbState = '002'
+            dbState = '112'
         elif comboState == 'مرجوع خرید':
-            dbState = '003'
+            dbState = '113'
         elif comboState == 'کسری بسته بندی نشده':
             dbState = '110'
         elif comboState == 'کسری بسته بندی شده':

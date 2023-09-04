@@ -5,7 +5,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from . import main_window
 import sys
-from pynput import keyboard
+# from pynput import keyboard
 
 
 class Ui_MainWindow(QMainWindow):
