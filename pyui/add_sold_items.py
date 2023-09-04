@@ -17,7 +17,6 @@ class Ui_Form(object):
     item_text = ''
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
         self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
         self.count_inpt.setValue(1)
@@ -69,7 +68,6 @@ class Ui_Form(object):
         self.name_inpt.setText(item.text())
 
     def btn_clicked(self):
-        # TODO: price, factor validate shan
         self.date_inpt.setText(cf.date_format_reviser(self.date_inpt.text()))
         if self.item_text != '' and self.count_inpt.text() != '' and cf.date_validator(self.date_inpt.text()) and self.price_inpt.text().isnumeric() and self.factor_inpt.text().isnumeric():
             text_array = self.item_text.split()[2:]
@@ -96,11 +94,7 @@ class Ui_Form(object):
             self.item_text = ''
         else:
             cf.warning_dialog('اطلاعات وارد شده معتبر نیست.')
-        self.name_inpt.clear()
-        self.count_inpt.setValue(1)
-        self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
-        self.price_inpt.clear()
-        self.factor_inpt.clear()
+        self.default()
 
     def onEnter(self):
         pass

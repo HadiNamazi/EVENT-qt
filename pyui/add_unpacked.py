@@ -29,7 +29,6 @@ class Ui_Form(object):
     item_text = ''
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
         self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
         self.count_inpt.setValue(1)
@@ -106,9 +105,7 @@ class Ui_Form(object):
             dialog.setIcon(QMessageBox.Information)
             dialog.setStandardButtons(QMessageBox.Ok)
             dialog.exec_()
-        self.name_inpt.clear()
-        self.count_inpt.setValue(1)
-        self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
+        self.default()
 
     # key_count = 0
     # def keyboard_listener(self):

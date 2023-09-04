@@ -15,7 +15,6 @@ class Ui_Form(object):
     item_text = ''
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
         self.min_inpt.clear()
 
@@ -81,8 +80,7 @@ class Ui_Form(object):
             dialog.setIcon(QMessageBox.Information)
             dialog.setStandardButtons(QMessageBox.Ok)
             dialog.exec_()
-        self.name_inpt.clear()
-        self.min_inpt.clear()
+        self.default()
 
     def setupUi(self, Form):
         global s

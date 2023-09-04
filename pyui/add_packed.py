@@ -16,7 +16,6 @@ class Ui_Form(object):
     item_text = ''
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
         self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
         self.count_inpt.setValue(1)
@@ -93,9 +92,7 @@ class Ui_Form(object):
             self.item_text = ''
         else:
             cf.warning_dialog('اطلاعات وارد شده معتبر نیست.')
-        self.name_inpt.clear()
-        self.count_inpt.setValue(1)
-        self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
+        self.default()
 
     def setupUi(self, Form):
         global s

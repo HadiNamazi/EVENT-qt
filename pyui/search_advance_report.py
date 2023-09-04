@@ -26,7 +26,6 @@ class Ui_Form(object):
     advanceReportForm = None
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
         self.to_date_inpt.clear()
         self.from_date_inpt.clear()

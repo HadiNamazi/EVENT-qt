@@ -26,7 +26,6 @@ class Ui_Form(object):
     simpleReportForm = None
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
 
     def simple_report_click(self):
