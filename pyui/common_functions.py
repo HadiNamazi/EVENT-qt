@@ -105,11 +105,14 @@ def date_validator(date):
                 return True
     return False
 
-def warning_dialog(message):
+def warning_dialog(message, title='خطا'):
         dialog = QMessageBox()
         dialog.setText(message)
-        dialog.setWindowTitle('خطا')
-        dialog.setIcon(QMessageBox.Warning)
+        dialog.setWindowTitle(title)
+        if title == 'خطا':
+            dialog.setIcon(QMessageBox.Warning)
+        else:
+            dialog.setIcon(QMessageBox.Information)
         dialog.setStandardButtons(QMessageBox.Ok)
         dialog.exec_()
 
@@ -170,3 +173,26 @@ def update_t1(name):
                 (str(unpacked), str(packed), str(sold), str(defective), name,))
     con.commit()
     mw.Ui_MainWindow.status_lbl(mw.s)
+
+def action_code_to_text(code):
+    if code == '01':
+        text = 'ورود کالای بسته بندی نشده'
+    elif code == '12':
+        text = 'انجام بسته بندی'
+    elif code == '23':
+        text = 'فروش'
+    elif code == '112':
+        text = 'معیوب'
+    elif code == '113':
+        text = 'مرجوع خرید'
+    elif code == '334':
+        text = 'مرجوع فروش'
+    elif code == '110':
+        text = 'کسری بسته بندی نشده'
+    elif code == '220':
+        text = 'کسری بسته بندی شده'
+    elif code == '111':
+        text = 'مازاد بسته بندی نشده'
+    elif code == '221':
+        text = 'مازاد بسته بندی شده'
+    return text

@@ -5,9 +5,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QMainWindow
 from . import add_unpacked, add_packed, alarm, add_product_name, add_sold_items, delete_product_name, edit_name_serial_search, inventory_modification, simple_report_search, add_password, change_password, search_advance_report, state_report_search, edit_history, returned
+from . import common_functions as cf
 import sqlite3
 import threading
 import jdatetime
+import xlsxwriter
 
 s = None
 
@@ -286,6 +288,33 @@ class Ui_MainWindow(QMainWindow):
         # app = QtGui.QApplication.instance()
         # app.closeAllWindows()
 
+    def export_click(self):
+        try:
+            date = jdatetime.datetime.now().strftime('%Y-%m-%d')
+            name = 'export ' + date + '.xlsx'
+            workbook = xlsxwriter.Workbook(name)
+            worksheet = workbook.add_worksheet()
+            mysel = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
+
+            worksheet.write(0, 0, 'اسم کالا')
+            worksheet.write(0, 1, 'تعداد')
+            worksheet.write(0, 2, 'تاریخ')
+            worksheet.write(0, 3, 'عملیات')
+            worksheet.write(0, 4, 'قیمت')
+            worksheet.write(0, 5, 'شماره فاکتور')
+
+            for i, row in enumerate(mysel):
+                for j, value in enumerate(row):
+                    if j == 3:
+                        worksheet.write(i+1, j, cf.action_code_to_text(value))
+                    else:
+                        worksheet.write(i+1, j, value)
+            workbook.close()
+        except:
+            cf.warning_dialog('ابتدا فایل اکسل قبلی را ببندید')
+            return
+        cf.warning_dialog('فایل اکسل در پوشه برنامه ایجاد شد.', 'Done')
+
     def setupUi(self, MainWindow):
         global s
         s = self
@@ -399,6 +428,9 @@ class Ui_MainWindow(QMainWindow):
         self.advanced_report_act = QtWidgets.QAction(MainWindow)
         self.advanced_report_act.triggered.connect(self.search_advance_report_click)
         self.advanced_report_act.setObjectName("advanced_report_act")
+        self.export_act = QtWidgets.QAction(MainWindow)
+        self.export_act.triggered.connect(self.export_click)
+        self.export_act.setObjectName("export_act")
         self.add_name_act = QtWidgets.QAction(MainWindow)
         self.add_name_act.triggered.connect(self.product_name_click)
         self.add_name_act.setObjectName("add_name_act")
@@ -437,6 +469,7 @@ class Ui_MainWindow(QMainWindow):
         self.setting.addAction(self.password_act)
         self.menu_history.addAction(self.advanced_report_act)
         self.menu_history.addAction(self.edit_history_act)
+        self.menu_history.addAction(self.export_act)
         self.menubar.addAction(self.menu.menuAction())
         self.menubar.addAction(self.menu_2.menuAction())
         self.menubar.addAction(self.menu_3.menuAction())
@@ -482,6 +515,7 @@ class Ui_MainWindow(QMainWindow):
         self.inventory_modification_act.setText(_translate("MainWindow", "اصلاح موجودی"))
         self.returned_act.setText(_translate("MainWindow", "ثبت مرجوعی"))
         self.edit_history_act.setText(_translate("MainWindow", "ویرایش تاریخچه"))
+        self.export_act.setText(_translate("MainWindow", "خروجی اکسل تاریخچه"))
 
 if __name__ == "__main__":
     import sys
