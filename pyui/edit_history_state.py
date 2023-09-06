@@ -3,12 +3,39 @@ from . import  edit_history as eh
 from . import common_functions as cf
 import sqlite3
 
+s = None
 
 class Ui_Form(object):
 
     # to connect to sqlite and have a cursor
     con = sqlite3.connect("db.db", check_same_thread=False)
     cur = con.cursor()
+
+    def default(self):
+        action = self.cur.execute("SELECT action FROM t2 WHERE ROWID=?", (eh.rowId_to_edit_history,)).fetchone()[0]
+        
+        if action == '01':
+            dbState = 0
+        elif action == '12':
+            dbState = 1
+        elif action == '23':
+            dbState = 2
+        elif action == '112':
+            dbState = 3
+        elif action == '113':
+            dbState = 4
+        elif action == '334':
+            dbState = 5
+        elif action == '110':
+            dbState = 6
+        elif action == '220':
+            dbState = 7
+        elif action == '111':
+            dbState = 8
+        elif action == '221':
+            dbState = 9
+
+        self.state_combo.setCurrentIndex(dbState)
 
     def edit_btn_clicked(self):
         comboState = self.state_combo.currentText()
@@ -26,18 +53,16 @@ class Ui_Form(object):
             dbState = '112'
         elif comboState == 'مرجوع خرید':
             dbState = '113'
+        elif comboState == 'مرجوع فروش':
+            dbState = '334'
         elif comboState == 'کسری بسته بندی نشده':
             dbState = '110'
         elif comboState == 'کسری بسته بندی شده':
             dbState = '220'
-        elif comboState == 'کسری فروخته شده':
-            dbState = '330'
         elif comboState == 'مازاد بسته بندی نشده':
             dbState = '111'
         elif comboState == 'مازاد بسته بندی شده':
             dbState = '221'
-        elif comboState == 'مازاد فروخته شده':
-            dbState = '331'
 
         self.cur.execute("UPDATE t2 SET action=? WHERE ROWID=?", (dbState, rowId,))
         reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
@@ -49,8 +74,11 @@ class Ui_Form(object):
             cf.warning_dialog('با تغییر این عملیات، در تاریخچه مشکل ایجاد خواهد شد.\nشما قادر به تغییر این عملیات نیستید.')
             self.con.rollback()
             eh.s.fill_table()
+        self.default()
 
     def setupUi(self, Form):
+        global s
+        s = self
         Form.setObjectName("Form")
         Form.setFixedSize(315, 96)
         self.state_combo = QtWidgets.QComboBox(Form)
@@ -58,7 +86,6 @@ class Ui_Form(object):
         self.state_combo.setGeometry(QtCore.QRect(120, 30, 161, 31))
         self.state_combo.setLayoutDirection(QtCore.Qt.RightToLeft)
         self.state_combo.setObjectName("state_combo")
-        self.state_combo.addItem("")
         self.state_combo.addItem("")
         self.state_combo.addItem("")
         self.state_combo.addItem("")
@@ -90,12 +117,11 @@ class Ui_Form(object):
         self.state_combo.setItemText(2, _translate("Form", "فروش"))
         self.state_combo.setItemText(3, _translate("Form", "معیوب"))
         self.state_combo.setItemText(4, _translate("Form", "مرجوع خرید"))
-        self.state_combo.setItemText(5, _translate("Form", "کسری بسته بندی نشده"))
-        self.state_combo.setItemText(6, _translate("Form", "کسری بسته بندی شده"))
-        self.state_combo.setItemText(7, _translate("Form", "کسری فروخته شده"))
+        self.state_combo.setItemText(5, _translate("Form", "مرجوع فروش"))
+        self.state_combo.setItemText(6, _translate("Form", "کسری بسته بندی نشده"))
+        self.state_combo.setItemText(7, _translate("Form", "کسری بسته بندی شده"))
         self.state_combo.setItemText(8, _translate("Form", "مازاد بسته بندی نشده"))
         self.state_combo.setItemText(9, _translate("Form", "مازاد بسته بندی شده"))
-        self.state_combo.setItemText(10, _translate("Form", "مازاد فروخته شده"))
         self.edit_btn.setText(_translate("Form", "ثبت ویرایش"))
 
 

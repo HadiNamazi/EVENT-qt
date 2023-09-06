@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt
 import sqlite3
 from . import main_window as mw
 from PyQt5.QtWidgets import QMessageBox
+from . import common_functions as cf
 
 s = None
 
@@ -16,17 +17,15 @@ class Ui_Form(object):
     item_text = ''
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
         self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
         self.count_inpt.setValue(1)
 
     def search_recommendation(self):
         self.search_list.clear()
+        res = self.cur.execute("SELECT name, serial, unpacked_count, packed_count, sold_count FROM t1").fetchall()
 
         if self.name_inpt.text() == '':
-            self.cur.execute("SELECT name, serial, unpacked_count, packed_count FROM t1")
-            res = self.cur.fetchall()
             rec = []
             for i in res:
                 if i[2] != '0':
@@ -35,6 +34,9 @@ class Ui_Form(object):
                 if i[3] != '0':
                     data = i[1] + ' - ' + '(بسته بندی شده) ' + i[0]
                     rec.append(data)
+                if i[3] != '0':
+                    data = i[1] + ' - ' + '(فروخته شده) ' + i[0]
+                    rec.append(data)
             self.search_list.addItems(rec)
             self.item_text = ''
         else:
@@ -42,13 +44,12 @@ class Ui_Form(object):
             splitted_name = name.split()
             rec = []
 
-            self.cur.execute("SELECT name, serial, unpacked_count, packed_count FROM t1")
-            res = self.cur.fetchall()
-
             count = 0
             for i in res:
                 data1 = i[1] + ' - ' + '(بسته بندی نشده) ' + i[0]
                 data2 = i[1] + ' - ' + '(بسته بندی شده) ' + i[0]
+                data3 = i[1] + ' - ' + '(فروخته شده) ' + i[0]
+
                 # if one of the items was clicked
                 if self.name_inpt.text() == data1:
                     rec = [data1]
@@ -56,16 +57,23 @@ class Ui_Form(object):
                 elif self.name_inpt.text() == data2:
                     rec = [data2]
                     break
+                elif self.name_inpt.text() == data3:
+                    rec = [data3]
+                    break
+
                 for j in splitted_name:
-                    if len(splitted_name) == 1 and j in i[1] and not data1 in rec and not data2 in rec:
+                    if len(splitted_name) == 1 and j in i[1] and not data1 in rec and not data2 in rec and not data3 in rec:
                         if i[2] != '0':
                             data = i[1] + ' - ' + '(بسته بندی نشده) ' + i[0]
                             rec.append(data)
                         if i[3] != '0':
                             data = i[1] + ' - ' + '(بسته بندی شده) ' + i[0]
                             rec.append(data)
+                        if i[4] != '0':
+                            data = i[1] + ' - ' + '(فروخته شده) ' + i[0]
+                            rec.append(data)
                         break
-                    if j != '-' and j in i[0] and not data1 in rec and not data2 in rec:
+                    if j != '-' and j in i[0] and not data1 in rec and not data2 in rec and not data3 in rec:
                         count += 1
                 if count == len(splitted_name):
                     if i[2] != '0':
@@ -73,6 +81,9 @@ class Ui_Form(object):
                         rec.append(data)
                     if i[3] != '0':
                         data = i[1] + ' - ' + '(بسته بندی شده) ' + i[0]
+                        rec.append(data)
+                    if i[4] != '0':
+                        data = i[1] + ' - ' + '(فروخته شده) ' + i[0]
                         rec.append(data)
                 count = 0
 
@@ -83,113 +94,80 @@ class Ui_Form(object):
         self.item_text = item.text()
         self.name_inpt.setText(item.text())
 
-    def date_validator(self, date):
-        splitted_date_str = date.split('/')
-        splitted_date = [int(i) for i in splitted_date_str]
-
-        if splitted_date[0] > 1400 and splitted_date[1] >= 1 and splitted_date[1] <= 12 and splitted_date[2] >= 1:
-            if splitted_date[1] <= 6:  # 31day
-                if splitted_date[2] <= 31:
-                    return True
-            elif splitted_date[1] >= 7 and splitted_date[2] <= 11:  # 30day
-                if splitted_date[2] <= 30:
-                    return True
-            else:  # 29day
-                if splitted_date[2] <= 29:
-                    return True
-        return False
-
     def btn_clicked(self):
-        if self.item_text != '' and self.count_inpt.text() != '' and self.date_validator(self.date_inpt.text()):
+        if self.item_text != '' and self.count_inpt.text() != '' and cf.date_validator(self.date_inpt.text()):
             name = self.item_text.split(')', 1)[1][1:]
             pack = self.item_text.split(')', 1)[0].split('(', 1)[1]
+            self.date_inpt.setText(cf.date_format_reviser(self.date_inpt.text()))
 
-            self.cur.execute('SELECT unpacked_count, packed_count, defective_count FROM t1 WHERE name=?', (name,))
-            res = self.cur.fetchone()
+            res = self.cur.execute('SELECT unpacked_count, packed_count, defective_count, sold_count FROM t1 WHERE name=?', (name,)).fetchone()
 
             if self.combo.currentText() == 'کسری':
                 if pack == 'بسته بندی نشده':
-                    if int(res[0]) >= int(self.count_inpt.text()):
-                        data1 = (str(int(res[0])-int(self.count_inpt.text())), name)
-                        data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '110', None, None)
+                    data1 = (str(int(res[0])-int(self.count_inpt.text())), name,)
+                    data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '110', None, None,)
+                    self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
+                    ordered_res = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
+                    if cf.check_conflict(ordered_res, name):
                         self.cur.execute('UPDATE t1 SET unpacked_count=? WHERE name=?', data1)
-                        self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
                         self.con.commit()
                         mw.Ui_MainWindow.status_lbl(mw.s)
+                    else:
+                        self.con.rollback()
+                        cf.warning_dialog('با انجام این عملیات در تاریخچه مشکل ایجاد خواهد شد.')
                 elif pack == 'بسته بندی شده':
-                    if int(res[1]) >= int(self.count_inpt.text()):
-                        data1 = (str(int(res[1]) - int(self.count_inpt.text())), name)
-                        data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '220', None, None)
+                    data1 = (str(int(res[1]) - int(self.count_inpt.text())), name,)
+                    data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '220', None, None,)
+                    self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
+                    ordered_res = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
+                    if cf.check_conflict(ordered_res, name):
                         self.cur.execute('UPDATE t1 SET packed_count=? WHERE name=?', data1)
-                        self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
                         self.con.commit()
                         mw.Ui_MainWindow.status_lbl(mw.s)
+                    else:
+                        self.con.rollback()
+                        cf.warning_dialog('با انجام این عملیات در تاریخچه مشکل ایجاد خواهد شد.')
+                else:
+                    cf.warning_dialog('روی کالای فروخته شده نمی توان کسری اعمال کرد.')
             elif self.combo.currentText() == 'مازاد':
                 if pack == 'بسته بندی نشده':
-                    data1 = (str(int(res[0]) + int(self.count_inpt.text())), name)
-                    data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '111', None, None)
+                    data1 = (str(int(res[0]) + int(self.count_inpt.text())), name,)
+                    data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '111', None, None,)
                     self.cur.execute('UPDATE t1 SET unpacked_count=? WHERE name=?', data1)
                     self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
                     self.con.commit()
                     mw.Ui_MainWindow.status_lbl(mw.s)
                 elif pack == 'بسته بندی شده':
-                    data1 = (str(int(res[1]) + int(self.count_inpt.text())), name)
-                    data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '221', None, None)
+                    data1 = (str(int(res[1]) + int(self.count_inpt.text())), name,)
+                    data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '221', None, None,)
                     self.cur.execute('UPDATE t1 SET packed_count=? WHERE name=?', data1)
                     self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
                     self.con.commit()
                     mw.Ui_MainWindow.status_lbl(mw.s)
+                else:
+                    cf.warning_dialog('روی کالای فروخته شده نمی توان مازاد اعمال کرد.')
             elif self.combo.currentText() == 'معیوب':
                 if pack == 'بسته بندی نشده':
-                    if int(res[0]) >= int(self.count_inpt.text()):
-                        data1 = (str(int(res[0])-int(self.count_inpt.text())), str(int(res[2])+int(self.count_inpt.text())), name)
-                        data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '112', None, None)
+                    data1 = (str(int(res[0])-int(self.count_inpt.text())), str(int(res[2])+int(self.count_inpt.text())), name,)
+                    data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '112', None, None,)
+                    self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
+                    ordered_res = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
+                    if cf.check_conflict(ordered_res, name):
                         self.cur.execute('UPDATE t1 SET unpacked_count=?, defective_count=? WHERE name=?', data1)
-                        self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)', data2)
                         self.con.commit()
                         mw.Ui_MainWindow.status_lbl(mw.s)
-                else:
-                    dialog = QMessageBox()
-                    dialog.setText('کالای بسته بندی شده نمی تواند به عنوان کالای معیوب ثبت شود.')
-                    dialog.setWindowTitle('خطا')
-                    dialog.setIcon(QMessageBox.Information)
-                    dialog.setStandardButtons(QMessageBox.Ok)
-                    dialog.exec_()
-
-            elif self.combo.currentText() == 'مرجوع':
-                if pack == 'بسته بندی نشده':
-                    if int(res[2]) >= int(self.count_inpt.text()):
-                        data1 = (str(int(res[2])-int(self.count_inpt.text())), name)
-                        data2 = (name, self.count_inpt.text(), self.date_inpt.text(), '113', None, None)
-                        self.cur.execute('UPDATE t1 SET defective_count=? WHERE name=?', data1)
-                        self.cur.execute('INSERT INTO t2 VALUES(?, ?, ?, ?, ? ,?)', data2)
-                        self.con.commit()
                     else:
-                        dialog = QMessageBox()
-                        dialog.setText('تعداد کالاهای معیوب این محصول کافی نیست.')
-                        dialog.setWindowTitle('خطا')
-                        dialog.setIcon(QMessageBox.Information)
-                        dialog.setStandardButtons(QMessageBox.Ok)
-                        dialog.exec_()
+                        self.con.rollback()
+                        cf.warning_dialog('با انجام این عملیات در تاریخچه مشکل ایجاد خواهد شد.')
                 else:
-                    dialog = QMessageBox()
-                    dialog.setText('کالای بسته بندی شده نمی تواند مرجوع شود.')
-                    dialog.setWindowTitle('خطا')
-                    dialog.setIcon(QMessageBox.Information)
-                    dialog.setStandardButtons(QMessageBox.Ok)
-                    dialog.exec_()
+                    cf.warning_dialog('فقط کالای بسته بندی نشده میتواند به عنوان کالای معیوب ثبت شود.')
 
             self.item_text = ''
+            
         else:
-            dialog = QMessageBox()
-            dialog.setText('اطلاعات وارد شده معتبر نیست.')
-            dialog.setWindowTitle('خطا')
-            dialog.setIcon(QMessageBox.Information)
-            dialog.setStandardButtons(QMessageBox.Ok)
-            dialog.exec_()
-        self.name_inpt.clear()
-        self.count_inpt.setValue(1)
-        self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
+            cf.warning_dialog('اطلاعات وارد شده معتبر نیست.')
+
+        self.default()
 
 
     def setupUi(self, Form):
@@ -232,8 +210,6 @@ class Ui_Form(object):
         self.combo.addItem("")
         self.combo.addItem("")
         self.combo.addItem("")
-        self.combo.addItem("")
-
         QtWidgets.QWidget.setTabOrder(self.name_inpt, self.search_list)
         QtWidgets.QWidget.setTabOrder(self.search_list, self.count_inpt)
         QtWidgets.QWidget.setTabOrder(self.count_inpt, self.date_inpt)
@@ -253,8 +229,6 @@ class Ui_Form(object):
         self.combo.setItemText(0, _translate("Form", "کسری"))
         self.combo.setItemText(1, _translate("Form", "مازاد"))
         self.combo.setItemText(2, _translate("Form", "معیوب"))
-        self.combo.setItemText(3, _translate("Form", "مرجوع"))
-
 
 if __name__ == "__main__":
     import sys

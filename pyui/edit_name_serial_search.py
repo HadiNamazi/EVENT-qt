@@ -27,7 +27,6 @@ class Ui_Form(object):
     editNameSerialForm = None
 
     def default(self):
-        self.search_list.clear()
         self.name_inpt.clear()
 
     def edit_name_serial_click(self):

@@ -22,24 +22,30 @@ class Ui_Form(object):
         self.cur.execute('SELECT * FROM t2')
         res = self.cur.fetchall()
         if res[i][3] == '01':
-            self.tableWidget.setItem(row, 0, QTableWidgetItem('ورود کالای بسته بندی نشده'))
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('ورود کالای بسته بندی نشده'))
         elif res[i][3] == '12':
-            self.tableWidget.setItem(row, 0, QTableWidgetItem('انجام بسته بندی'))
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('انجام بسته بندی'))
         elif res[i][3] == '23':
-            self.tableWidget.setItem(row, 0, QTableWidgetItem('فروش'))
-        elif len(res[i][3]) == 3 and res[i][3][2] == '0':
-            self.tableWidget.setItem(row, 0, QTableWidgetItem('کسری'))
-        elif len(res[i][3]) == 3 and res[i][3][2] == '1':
-            self.tableWidget.setItem(row, 0, QTableWidgetItem('مازاد'))
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('فروش'))
+        elif len(res[i][3]) == 3 and res[i][3] == '110':
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری بسته بندی نشده'))
+        elif len(res[i][3]) == 3 and res[i][3] == '220':
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری بسته بندی شده'))
+        elif len(res[i][3]) == 3 and res[i][3] == '111':
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد بسته بندی نشده'))
+        elif len(res[i][3]) == 3 and res[i][3] == '221':
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد بسته بندی شده'))
         elif len(res[i][3]) == 3 and res[i][3][2] == '2':
-            self.tableWidget.setItem(row, 0, QTableWidgetItem('معیوب'))
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('معیوب'))
         elif len(res[i][3]) == 3 and res[i][3][2] == '3':
-            self.tableWidget.setItem(row, 0, QTableWidgetItem('مرجوع'))
-        self.tableWidget.setItem(row, 1, QTableWidgetItem(res[i][0]))
-        self.tableWidget.setItem(row, 2, QTableWidgetItem(res[i][1]))
-        self.tableWidget.setItem(row, 3, QTableWidgetItem(res[i][2]))
-        self.tableWidget.setItem(row, 4, QTableWidgetItem(res[i][5]))
-        self.tableWidget.setItem(row, 5, QTableWidgetItem(res[i][4]))
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع خرید'))
+        elif len(res[i][3]) == 3 and res[i][3][2] == '4':
+            self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع فروش'))
+        self.tableWidget.setItem(i, 1, QTableWidgetItem(res[i][0]))
+        self.tableWidget.setItem(i, 2, QTableWidgetItem(res[i][1]))
+        self.tableWidget.setItem(i, 3, QTableWidgetItem(res[i][2]))
+        self.tableWidget.setItem(i, 4, QTableWidgetItem(res[i][5]))
+        self.tableWidget.setItem(i, 5, QTableWidgetItem(res[i][4]))
 
     def add_history_list_items(self):
         # to clear tableWidget

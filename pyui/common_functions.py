@@ -12,6 +12,7 @@ def history_tracker(history):
     sold = 0
     defective = 0
     unpacked_returned = 0
+    sold_returned = 0
 
     for i in history:
         if i[3] == '01':
@@ -54,8 +55,13 @@ def history_tracker(history):
         elif i[3][2] == '3':  # returned_unpacked
             if int(i[1]) > defective:
                 return False
-            unpacked -= int(i[1])
+            defective -= int(i[1])
             unpacked_returned += int(i[1])
+        elif i[3][2] == '4': # returned_sold
+            if int(i[1]) > sold:
+                return False
+            sold -= int(i[1])
+            sold_returned += int(i[1])
     return True
 
 def history_limiter(history, name):
@@ -125,6 +131,7 @@ def update_t1(name):
     sold = 0
     defective = 0
     unpacked_returned = 0
+    sold_returned = 0
 
     for i in limited_history:
         if i[3] == '01':
@@ -153,8 +160,11 @@ def update_t1(name):
             unpacked -= int(i[1])
             defective += int(i[1])
         elif i[3][2] == '3':  # returned_unpacked
-            unpacked -= int(i[1])
+            defective -= int(i[1])
             unpacked_returned += int(i[1])
+        elif i[3][2] == '4': # reutrned_sold
+            sold -= int(i[1])
+            sold_returned += int(i[1])
 
     cur.execute("UPDATE t1 SET unpacked_count=?, packed_count=?, sold_count=?, defective_count=? WHERE name=?",
                 (str(unpacked), str(packed), str(sold), str(defective), name,))

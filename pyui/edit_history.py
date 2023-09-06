@@ -28,6 +28,7 @@ class Ui_Form(object):
     def edit_history_click(self):
         if not self.editHistoryStateForm:
             self.editHistoryStateForm = EditHistoryStateForm()
+        edit_history_state.Ui_Form.default(edit_history_state.s)
         self.editHistoryStateForm.show()
 
     def ex_names_list_generator(self):
@@ -53,14 +54,20 @@ class Ui_Form(object):
                 self.tableWidget.setItem(i, 0, QTableWidgetItem('انجام بسته بندی'))
             elif res[i][3] == '23':
                 self.tableWidget.setItem(i, 0, QTableWidgetItem('فروش'))
-            elif len(res[i][3]) == 3 and res[i][3][2] == '0':
-                self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری'))
-            elif len(res[i][3]) == 3 and res[i][3][2] == '1':
-                self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد'))
+            elif len(res[i][3]) == 3 and res[i][3] == '110':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری بسته بندی نشده'))
+            elif len(res[i][3]) == 3 and res[i][3] == '220':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری بسته بندی شده'))
+            elif len(res[i][3]) == 3 and res[i][3] == '111':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد بسته بندی نشده'))
+            elif len(res[i][3]) == 3 and res[i][3] == '221':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد بسته بندی شده'))
             elif len(res[i][3]) == 3 and res[i][3][2] == '2':
                 self.tableWidget.setItem(i, 0, QTableWidgetItem('معیوب'))
             elif len(res[i][3]) == 3 and res[i][3][2] == '3':
-                self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع'))
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع خرید'))
+            elif len(res[i][3]) == 3 and res[i][3][2] == '4':
+                self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع فروش'))
             self.tableWidget.setItem(i, 1, QTableWidgetItem(res[i][0]))
             self.tableWidget.setItem(i, 2, QTableWidgetItem(res[i][1]))
             self.tableWidget.setItem(i, 3, QTableWidgetItem(res[i][2]))

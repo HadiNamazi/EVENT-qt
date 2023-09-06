@@ -4,7 +4,7 @@ from time import sleep
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QMainWindow
-from . import add_unpacked, add_packed, alarm, add_product_name, add_sold_items, delete_product_name, edit_name_serial_search, inventory_modification, simple_report_search, add_password, change_password, search_advance_report, state_report_search, edit_history
+from . import add_unpacked, add_packed, alarm, add_product_name, add_sold_items, delete_product_name, edit_name_serial_search, inventory_modification, simple_report_search, add_password, change_password, search_advance_report, state_report_search, edit_history, returned
 import sqlite3
 import threading
 import jdatetime
@@ -83,6 +83,12 @@ class EditHistoryForm(QtWidgets.QWidget):
         super().__init__()
         self.ui = edit_history.Ui_Form()
         self.ui.setupUi(self)
+class ReturnedForm(QtWidgets.QWidget):
+    def __init__(self):
+        super().__init__()
+        self.ui = returned.Ui_Form()
+        self.ui.setupUi(self)
+
 
 class Ui_MainWindow(QMainWindow):
 
@@ -106,6 +112,7 @@ class Ui_MainWindow(QMainWindow):
     changePasswordForm = None
     stateReportSearchForm = None
     editHistoryForm = None
+    returnedForm = None
 
     def unpacked_click(self):
         if not self.unpackedForm:
@@ -209,7 +216,13 @@ class Ui_MainWindow(QMainWindow):
         edit_history.Ui_Form.ex_names_list_generator(edit_history.s)
         edit_history.Ui_Form.fill_table(edit_history.s)
         self.editHistoryForm.show()
-        pass
+
+    def returned_click(self):
+        if not self.returnedForm:
+            self.returnedForm = ReturnedForm()
+        returned.Ui_Form.default(returned.s)
+        returned.Ui_Form.search_recommendation(returned.s)
+        self.returnedForm.show()
 
     def live_datetime(self):
         while True:
@@ -401,6 +414,9 @@ class Ui_MainWindow(QMainWindow):
         self.alarm_act = QtWidgets.QAction(MainWindow)
         self.alarm_act.triggered.connect(self.alarm_click)
         self.alarm_act.setObjectName("alarm_act")
+        self.returned_act = QtWidgets.QAction(MainWindow)
+        self.returned_act.triggered.connect(self.returned_click)
+        self.returned_act.setObjectName("returned_act")
         self.inventory_modification_act = QtWidgets.QAction(MainWindow)
         self.inventory_modification_act.setObjectName("inventory_modification_act")
         self.inventory_modification_act.triggered.connect(self.inventory_modification_click)
@@ -409,14 +425,15 @@ class Ui_MainWindow(QMainWindow):
         self.menu.addAction(self.sold_act)
         self.menu.addSeparator()
         self.menu.addAction(self.inventory_modification_act)
+        self.menu.addAction(self.returned_act)
         self.menu_2.addAction(self.add_name_act)
         self.menu_2.addAction(self.delete_name_act)
         self.menu_2.addAction(self.edit_name_serial_act)
         self.menu_2.addSeparator()
-        self.menu_2.addAction(self.alarm_act)
         self.menu_3.addAction(self.simple_report_act)
         self.menu_3.addAction(self.state_report_act)
         # self.menu_3.addAction(self.advanced_report_act)
+        self.setting.addAction(self.alarm_act)
         self.setting.addAction(self.password_act)
         self.menu_history.addAction(self.advanced_report_act)
         self.menu_history.addAction(self.edit_history_act)
@@ -463,6 +480,7 @@ class Ui_MainWindow(QMainWindow):
         self.state_report_act.setText(_translate("MainWindow", "گزارش بر اساس وضعیت کالا"))
         self.advanced_report_act.setText(_translate("MainWindow", "مشاهده تاریخچه"))
         self.inventory_modification_act.setText(_translate("MainWindow", "اصلاح موجودی"))
+        self.returned_act.setText(_translate("MainWindow", "ثبت مرجوعی"))
         self.edit_history_act.setText(_translate("MainWindow", "ویرایش تاریخچه"))
 
 if __name__ == "__main__":
