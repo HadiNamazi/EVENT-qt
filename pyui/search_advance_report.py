@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
 
 from PyQt5.QtWidgets import QMessageBox
-
+from . import common_functions as cf
 from . import advance_report
 
 s = None
@@ -115,20 +115,8 @@ class Ui_Form(object):
         if self.date_chck.isChecked() and self.date_validator(self.from_date_inpt.text()) and self.date_validator(
                 self.to_date_inpt.text()):
             # adding 0 to date strings
-            from_date = self.from_date_inpt.text()
-            to_date = self.to_date_inpt.text()
-            for i in range(0, len(from_date)):
-                if from_date[i] == '/' and from_date[i+2] == '/':
-                    from_date = from_date[:i+1] + '0' + from_date[i+1:]
-                    break
-            if len(from_date) == 9:
-                from_date = from_date[:7] + '0' + from_date[-1]
-            for i in range(0, len(to_date)):
-                if to_date[i] == '/' and to_date[i+2] == '/':
-                    to_date = to_date[:i+1] + '0' + to_date[i+1:]
-                    break
-            if len(to_date) == 9:
-                to_date = to_date[:7] + '0' + to_date[-1]
+            from_date = cf.date_format_reviser(self.from_date_inpt.text())
+            to_date = cf.date_format_reviser(self.to_date_inpt.text())
 
             f = int(from_date.replace('/', ''))
             t = int(to_date.replace('/', ''))

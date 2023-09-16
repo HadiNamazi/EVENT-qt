@@ -4,6 +4,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView, QWidget, QFormLayout
 from . import main_window as mw
+from . import common_functions as cf
 
 from_date = 0
 to_date = 0
@@ -22,36 +23,36 @@ class Ui_Form(object):
         self.cur.execute('SELECT * FROM t2 ORDER BY date')
         res = self.cur.fetchall()
         if res[i][3] == '01':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('ورود کالای بسته بندی نشده'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('ورود کالای بسته بندی نشده'))
         elif res[i][3] == '12':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('انجام بسته بندی'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('انجام بسته بندی'))
         elif res[i][3] == '23':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('فروش'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('فروش'))
         elif len(res[i][3]) == 3 and res[i][3] == '110':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری بسته بندی نشده'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('کسری بسته بندی نشده'))
         elif len(res[i][3]) == 3 and res[i][3] == '220':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('کسری بسته بندی شده'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('کسری بسته بندی شده'))
         elif len(res[i][3]) == 3 and res[i][3] == '111':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد بسته بندی نشده'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('مازاد بسته بندی نشده'))
         elif len(res[i][3]) == 3 and res[i][3] == '221':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('مازاد بسته بندی شده'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('مازاد بسته بندی شده'))
         elif len(res[i][3]) == 3 and res[i][3][2] == '2':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('معیوب'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('معیوب'))
         elif len(res[i][3]) == 3 and res[i][3][2] == '3':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع خرید'))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('مرجوع خرید'))
         elif len(res[i][3]) == 3 and res[i][3][2] == '4':
-            self.tableWidget.setItem(i, 0, QTableWidgetItem('مرجوع فروش'))
-        self.tableWidget.setItem(i, 1, QTableWidgetItem(res[i][0]))
-        self.tableWidget.setItem(i, 2, QTableWidgetItem(res[i][1]))
-        self.tableWidget.setItem(i, 3, QTableWidgetItem(res[i][2]))
-        self.tableWidget.setItem(i, 4, QTableWidgetItem(res[i][5]))
-        self.tableWidget.setItem(i, 5, QTableWidgetItem(res[i][4]))
+            self.tableWidget.setItem(row, 0, QTableWidgetItem('مرجوع فروش'))
+        self.tableWidget.setItem(row, 1, QTableWidgetItem(res[i][0]))
+        self.tableWidget.setItem(row, 2, QTableWidgetItem(res[i][1]))
+        self.tableWidget.setItem(row, 3, QTableWidgetItem(res[i][2]))
+        self.tableWidget.setItem(row, 4, QTableWidgetItem(res[i][5]))
+        self.tableWidget.setItem(row, 5, QTableWidgetItem(res[i][4]))
 
     def add_history_list_items(self):
         # to clear tableWidget
         self.tableWidget.setRowCount(0)
 
-        self.cur.execute('SELECT * FROM t2')
+        self.cur.execute('SELECT * FROM t2 ORDER BY date')
         res = self.cur.fetchall()
 
         if from_date == 0 and name == '' and state == '': # all history
@@ -84,18 +85,13 @@ class Ui_Form(object):
         elif name == '' and state == '': # date
             i_list = []
             for i in range(0, len(res)):
-                # adding 0 to this_date string
-                this_date = res[i][2]
-                for j in range(0, len(this_date)):
-                    if this_date[j] == '/' and this_date[j + 2] == '/':
-                        this_date = this_date[:j] + '0' + this_date[j + 1:]
-                        break
-                if len(this_date) == 9:
-                    this_date = this_date[:7] + '0' + this_date[-1]
-
+                this_date = cf.date_format_reviser(res[i][2])
                 this_date = int(this_date.replace('/', ''))
-                if from_date <= this_date <= to_date:
-                    i_list.append(i)
+                if from_date <= this_date :
+                    if this_date <= to_date:
+                        i_list.append(i)
+                    else:
+                        break
             self.tableWidget.setRowCount(len(i_list))
             for i in range(0, len(i_list)):
                 self.row_insert(i_list[i], i)
@@ -104,13 +100,12 @@ class Ui_Form(object):
             i_list = []
             for i in range(0, len(res)):
                 if name == res[i][0]:
-                    for j in range(0, len(res)):
-                        if state == 'بسته بندی نشده' and res[j][3] == '01':
-                            i_list.append(j)
-                        elif state == 'بسته بندی شده' and res[j][3] == '12':
-                            i_list.append(j)
-                        elif state == 'فروخته شده' and res[j][3] == '23':
-                            i_list.append(j)
+                    if state == 'بسته بندی نشده' and res[i][3] == '01':
+                        i_list.append(i)
+                    elif state == 'بسته بندی شده' and res[i][3] == '12':
+                        i_list.append(i)
+                    elif state == 'فروخته شده' and res[i][3] == '23':
+                        i_list.append(i)
             self.tableWidget.setRowCount(len(i_list))
             for i in range(0, len(i_list)):
                 self.row_insert(i_list[i], i)
@@ -118,23 +113,15 @@ class Ui_Form(object):
         elif name == '': # date, state
             i_list = []
             for i in range(0, len(res)):
-                # adding 0 to this_date string
-                this_date = res[i][2]
-                for j in range(0, len(this_date)):
-                    if this_date[j] == '/' and this_date[j + 2] == '/':
-                        this_date = this_date[:j] + '0' + this_date[j + 1:]
-                        break
-                if len(this_date) == 9:
-                    this_date = this_date[:7] + '0' + this_date[-1]
+                this_date = cf.date_format_reviser(res[i][2])
                 this_date = int(this_date.replace('/', ''))
-                if from_date <= this_date <= to_date:
-                    for j in range(0, len(res)):
-                        if state == 'بسته بندی نشده' and res[j][3] == '01':
-                            i_list.append(i)
-                        elif state == 'بسته بندی شده' and res[j][3] == '12':
-                            i_list.append(j)
-                        elif state == 'فروخته شده' and res[j][3] == '23':
-                            i_list.append(j)
+                if from_date <= this_date and this_date <= to_date:         
+                    if state == 'بسته بندی نشده' and res[i][3] == '01':
+                        i_list.append(i)
+                    elif state == 'بسته بندی شده' and res[i][3] == '12':
+                        i_list.append(i)
+                    elif state == 'فروخته شده' and res[i][3] == '23':
+                        i_list.append(i)
 
             self.tableWidget.setRowCount(len(i_list))
             for i in range(0, len(i_list)):
@@ -144,19 +131,10 @@ class Ui_Form(object):
             i_list = []
             for i in range(0, len(res)):
                 if name == res[i][0]:
-                    for k in range(0, len(res)):
-                        # adding 0 to this_date string
-                        this_date = res[k][2]
-                        for j in range(0, len(this_date)):
-                            if this_date[j] == '/' and this_date[j + 2] == '/':
-                                this_date = this_date[:j] + '0' + this_date[j + 1:]
-                                break
-                        if len(this_date) == 9:
-                            this_date = this_date[:7] + '0' + this_date[-1]
-
-                        this_date = int(this_date.replace('/', ''))
-                        if from_date <= this_date <= to_date:
-                            i_list.append(k)
+                    this_date = cf.date_format_reviser(res[i][2])
+                    this_date = int(this_date.replace('/', ''))
+                    if from_date <= this_date and this_date <= to_date:
+                        i_list.append(i)
 
             self.tableWidget.setRowCount(len(i_list))
             for i in range(0, len(i_list)):
@@ -166,24 +144,15 @@ class Ui_Form(object):
             i_list = []
             for i in range(0, len(res)):
                 if name == res[i][0]:
-                    for k in range(0, len(res)):
-                        # adding 0 to this_date string
-                        this_date = res[k][2]
-                        for j in range(0, len(this_date)):
-                            if this_date[j] == '/' and this_date[j + 2] == '/':
-                                this_date = this_date[:j] + '0' + this_date[j + 1:]
-                                break
-                        if len(this_date) == 9:
-                            this_date = this_date[:7] + '0' + this_date[-1]
-                        this_date = int(this_date.replace('/', ''))
-                        if from_date <= this_date <= to_date:
-                            for j in range(0, len(res)):
-                                if state == 'بسته بندی نشده' and res[j][3] == '01':
-                                    i_list.append(j)
-                                elif state == 'بسته بندی شده' and res[j][3] == '12':
-                                    i_list.append(j)
-                                elif state == 'فروخته شده' and res[j][3] == '23':
-                                    i_list.append(j)
+                    this_date = cf.date_format_reviser(res[i][2])
+                    this_date = int(this_date.replace('/', ''))
+                    if from_date <= this_date and this_date <= to_date:
+                        if state == 'بسته بندی نشده' and res[i][3] == '01':
+                            i_list.append(i)
+                        elif state == 'بسته بندی شده' and res[i][3] == '12':
+                            i_list.append(i)
+                        elif state == 'فروخته شده' and res[i][3] == '23':
+                            i_list.append(i)
             self.tableWidget.setRowCount(len(i_list))
             for i in range(0, len(i_list)):
                 self.row_insert(i_list[i], i)
