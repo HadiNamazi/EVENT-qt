@@ -19,7 +19,7 @@ class Ui_Form(object):
     cur = con.cursor()
 
     def row_insert(self, i, row):
-        self.cur.execute('SELECT * FROM t2')
+        self.cur.execute('SELECT * FROM t2 ORDER BY date')
         res = self.cur.fetchall()
         if res[i][3] == '01':
             self.tableWidget.setItem(i, 0, QTableWidgetItem('ورود کالای بسته بندی نشده'))

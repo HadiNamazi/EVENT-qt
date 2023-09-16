@@ -232,14 +232,6 @@ class Ui_MainWindow(QMainWindow):
             self.datetime_lbl.setText(datetime)
             sleep(1)
 
-    def resource_path(self, relative_path):
-        try:
-            base_path = sys._MEIPASS
-        except Exception:
-            base_path = os.path.abspath(".")
-
-        return os.path.join(base_path, relative_path)
-
     def status_lbl(self):
         self.cur.execute('SELECT unpacked_count, packed_count FROM t1')
         res = self.cur.fetchall()
@@ -291,7 +283,7 @@ class Ui_MainWindow(QMainWindow):
     def export_click(self):
         try:
             date = jdatetime.datetime.now().strftime('%Y-%m-%d')
-            name = 'export ' + date + '.xlsx'
+            name = 'All history ' + date + '.xlsx'
             workbook = xlsxwriter.Workbook(name)
             worksheet = workbook.add_worksheet()
             mysel = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
@@ -313,7 +305,7 @@ class Ui_MainWindow(QMainWindow):
         except:
             cf.warning_dialog('ابتدا فایل اکسل قبلی را ببندید')
             return
-        cf.warning_dialog('فایل اکسل در پوشه برنامه ایجاد شد.', 'Done')
+        cf.warning_dialog("فایل اکسل در پوشه 'خروجی های اکسل' در پوشه برنامه ایجاد شد.", 'Done')
 
     def setupUi(self, MainWindow):
         global s
@@ -322,7 +314,7 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setFixedSize(600, 506)
         icon = QtGui.QIcon()
         CURRENT_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-        filename = os.path.join(CURRENT_DIRECTORY, self.resource_path('logo/removed_babr.png'))
+        filename = os.path.join(CURRENT_DIRECTORY, cf.resource_path('logo/removed_babr.png'))
         icon.addPixmap(QtGui.QPixmap(filename), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         MainWindow.setStyleSheet("")
@@ -337,7 +329,7 @@ class Ui_MainWindow(QMainWindow):
         self.label_4 = QtWidgets.QLabel(self.centralwidget)
         self.label_4.setGeometry(QtCore.QRect(230, 30, 131, 141))
         self.label_4.setText("")
-        filename = os.path.join(CURRENT_DIRECTORY, self.resource_path('logo/babr.png'))
+        filename = os.path.join(CURRENT_DIRECTORY, cf.resource_path('logo/babr.png'))
         self.label_4.setPixmap(QtGui.QPixmap(filename))
         self.label_4.setScaledContents(True)
         self.label_4.setObjectName("label_4")
@@ -494,7 +486,7 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "ایونت - صفحه اصلی"))
         self.label.setText(_translate("MainWindow", "کالاهای بسته بندی نشده"))
         self.label_2.setText(_translate("MainWindow", "کالاهای بسته بندی شده"))
-        self.label_6.setText(_translate("MainWindow", "V1.3"))
+        self.label_6.setText(_translate("MainWindow", "V1.4"))
         self.label_3.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/HadiNamazi\"><span style=\" text-decoration: underline; color:#444444;\">Design &amp; Development by HadiNmz</span></a></p></body></html>"))
         self.menu.setTitle(_translate("MainWindow", "مدیریت کالاها"))
         self.menu_2.setTitle(_translate("MainWindow", "اطلاعات اولیه"))

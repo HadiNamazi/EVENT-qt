@@ -1,13 +1,17 @@
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import QApplication, QMainWindow, QShortcut
-import sys
+import sys, os
 from pyui import main_window, entrance_password
 import sqlite3
-
-# def hi():
-#     print('hi')
+from pyui import common_functions as cf
 
 if __name__ == "__main__":
+
+    # creating 'Excel exports' folder
+    try:
+        os.mkdir(cf.resource_path('خروجی های اکسل'))
+    except:
+        pass
 
     # to connect to sqlite and have a cursor
     con = sqlite3.connect("db.db")
@@ -42,9 +46,6 @@ if __name__ == "__main__":
             win = QMainWindow()
             ui = entrance_password.Ui_MainWindow()
             ui.setupUi(win)
-
-            # shortcut = QShortcut(QKeySequence(""), win)
-            # shortcut.activated.connect(hi)
 
             win.show()
             app.exec()

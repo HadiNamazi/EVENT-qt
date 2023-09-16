@@ -1,6 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sqlite3
-
 from PyQt5.QtWidgets import QTableWidgetItem
 
 state = ''
@@ -14,20 +13,23 @@ class Ui_Form(object):
 
     def fill_data(self):
         res = self.cur.execute("SELECT name, unpacked_count, packed_count, sold_count, defective_count FROM t1").fetchall()
-        dict = {}
+        # sorting by name
+        res = sorted(res, key=lambda x: x[0])
+        
+        dic = {}
         for i in res:
             if state == 'بسته بندی نشده' and i[1] != '0':
-                dict[i[0]] = i[1]
+                dic[i[0]] = i[1]
             elif state == 'بسته بندی شده' and i[2] != '0':
-                dict[i[0]] = i[2]
+                dic[i[0]] = i[2]
             elif state == 'فروخته شده' and i[3] != '0':
-                dict[i[0]] = i[3]
+                dic[i[0]] = i[3]
             elif i[4] != '0': #معیوب
-                dict[i[0]] = i[4]
-        self.tableWidget.setRowCount(len(dict))
-        for i in range(0, len(dict)):
-            self.tableWidget.setItem(i, 0, QTableWidgetItem(list(dict.keys())[i]))
-            self.tableWidget.setItem(i, 1, QTableWidgetItem(dict[list(dict.keys())[i]]))
+                dic[i[0]] = i[4]
+        self.tableWidget.setRowCount(len(dic))
+        for i in range(0, len(dic)):
+            self.tableWidget.setItem(i, 0, QTableWidgetItem(list(dic.keys())[i]))
+            self.tableWidget.setItem(i, 1, QTableWidgetItem(dic[list(dic.keys())[i]]))
 
     def setupUi(self, Form):
         global s

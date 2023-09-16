@@ -1,4 +1,4 @@
-import sqlite3
+import sqlite3, sys, os
 from PyQt5.QtWidgets import QMessageBox
 from . import main_window as mw
 
@@ -196,3 +196,11 @@ def action_code_to_text(code):
     elif code == '221':
         text = 'مازاد بسته بندی شده'
     return text
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)

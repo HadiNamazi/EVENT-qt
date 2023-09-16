@@ -44,7 +44,7 @@ class Ui_Form(object):
         # to clear tableWidget
         self.tableWidget.setRowCount(0)
 
-        self.cur.execute('SELECT * FROM t2')
+        self.cur.execute('SELECT * FROM t2 ORDER BY date')
         res = self.cur.fetchall()
         self.tableWidget.setRowCount(len(res))
         for i in range(0, len(res)):
