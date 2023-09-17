@@ -284,7 +284,7 @@ class Ui_MainWindow(QMainWindow):
         try:
             date = jdatetime.datetime.now().strftime('%Y-%m-%d')
             name = 'All history ' + date + '.xlsx'
-            workbook = xlsxwriter.Workbook(name)
+            workbook = xlsxwriter.Workbook(cf.resource_path('خروجی های اکسل/' + name))
             worksheet = workbook.add_worksheet()
             mysel = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
 
@@ -486,7 +486,7 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "ایونت - صفحه اصلی"))
         self.label.setText(_translate("MainWindow", "کالاهای بسته بندی نشده"))
         self.label_2.setText(_translate("MainWindow", "کالاهای بسته بندی شده"))
-        self.label_6.setText(_translate("MainWindow", "V1.4"))
+        self.label_6.setText(_translate("MainWindow", "V1.5"))
         self.label_3.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/HadiNamazi\"><span style=\" text-decoration: underline; color:#444444;\">Design &amp; Development by HadiNmz</span></a></p></body></html>"))
         self.menu.setTitle(_translate("MainWindow", "مدیریت کالاها"))
         self.menu_2.setTitle(_translate("MainWindow", "اطلاعات اولیه"))
