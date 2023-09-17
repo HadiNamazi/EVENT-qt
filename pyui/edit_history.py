@@ -32,7 +32,7 @@ class Ui_Form(object):
         self.editHistoryStateForm.show()
 
     def ex_names_list_generator(self):
-        self.ex_names_list = self.cur.execute('SELECT name FROM t2').fetchall()
+        self.ex_names_list = self.cur.execute('SELECT name FROM t2 ORDER BY date').fetchall()
 
     def fill_table(self):
         try:
@@ -80,8 +80,8 @@ class Ui_Form(object):
         if dbutton.text() == 'OK':
             row = self.tableWidget.currentRow()
             ex_name = self.ex_names_list[row][0]
-            res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2").fetchall()
-            rowIds = self.cur.execute("SELECT ROWID FROM t2").fetchall()
+            res = self.cur.execute("SELECT ROWID, name, count, date, action FROM t2 ORDER BY date").fetchall()
+            rowIds = self.cur.execute("SELECT ROWID FROM t2 ORDER BY date").fetchall()
             rowId = rowIds[row][0]
 
             self.cur.execute("DELETE FROM t2 WHERE ROWID=?", (rowId,))
@@ -112,7 +112,7 @@ class Ui_Form(object):
     def state_selection(self):
         row = self.tableWidget.currentRow()
         column = self.tableWidget.currentColumn()
-        rowIds = self.cur.execute("SELECT ROWID FROM t2").fetchall()
+        rowIds = self.cur.execute("SELECT ROWID FROM t2 ORDER BY date").fetchall()
         rowId = rowIds[row][0]
         if column == 0:
             ex_name = self.ex_names_list[row][0]
@@ -144,6 +144,7 @@ class Ui_Form(object):
         elif column == 2:
             self.cur.execute("UPDATE t2 SET count=? WHERE ROWID=?", (item.text(), rowId,))
             reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
+            print(ex_name)
             if item.text().isnumeric() and cf.check_conflict(reslist, ex_name):
                 self.con.commit()
                 cf.update_t1(ex_name)
