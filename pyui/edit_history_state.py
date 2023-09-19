@@ -65,7 +65,7 @@ class Ui_Form(object):
             dbState = '221'
 
         self.cur.execute("UPDATE t2 SET action=? WHERE ROWID=?", (dbState, rowId,))
-        reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
+        reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
         if cf.check_conflict(reslist, ex_name):
             self.con.commit()
             cf.update_t1(ex_name)

@@ -126,7 +126,7 @@ class Ui_Form(object):
         row = item.row()
         column = item.column()
         ex_name = self.ex_names_list[row][0]
-        rowIds = self.cur.execute("SELECT ROWID FROM t2").fetchall()
+        rowIds = self.cur.execute("SELECT ROWID FROM t2 ORDER BY date").fetchall()
         rowId = rowIds[row][0]
 
         if column == 1:
@@ -144,7 +144,6 @@ class Ui_Form(object):
         elif column == 2:
             self.cur.execute("UPDATE t2 SET count=? WHERE ROWID=?", (item.text(), rowId,))
             reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date")
-            print(ex_name)
             if item.text().isnumeric() and cf.check_conflict(reslist, ex_name):
                 self.con.commit()
                 cf.update_t1(ex_name)

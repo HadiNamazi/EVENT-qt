@@ -19,25 +19,34 @@ def history_tracker(history):
             unpacked += int(i[1])
         elif i[3] == '12':
             if int(i[1]) > unpacked:
+                print(i)
                 return False
             unpacked -= int(i[1])
             packed += int(i[1])
         elif i[3] == '23':
             if int(i[1]) > packed:
+                print(i)
+
                 return False
             packed -= int(i[1])
             sold += int(i[1])
         elif i[3][2] == '0':  # kasri
             if i[3][0] == '1':
                 if int(i[1]) > unpacked:
+                    print(i)
+
                     return False
                 unpacked -= int(i[1])
             if i[3][0] == '2':
                 if int(i[1]) > packed:
+                    print(i)
+
                     return False
                 packed -= int(i[1])
             if i[3][0] == '3':
                 if int(i[1]) > sold:
+                    print(i)
+
                     return False
                 sold -= int(i[1])
         elif i[3][2] == '1':  # mazad
@@ -49,16 +58,22 @@ def history_tracker(history):
                 sold += int(i[1])
         elif i[3][2] == '2':  # defective
             if int(i[1]) > unpacked:
+                print(i)
+
                 return False
             unpacked -= int(i[1])
             defective += int(i[1])
         elif i[3][2] == '3':  # returned_unpacked
             if int(i[1]) > defective:
+                print(i)
+
                 return False
             defective -= int(i[1])
             unpacked_returned += int(i[1])
         elif i[3][2] == '4': # returned_sold
             if int(i[1]) > sold:
+                print(i)
+
                 return False
             sold -= int(i[1])
             sold_returned += int(i[1])
