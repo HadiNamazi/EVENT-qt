@@ -17,6 +17,9 @@ if __name__ == "__main__":
     con = sqlite3.connect("db.db")
     cur = con.cursor()
 
+    # hiding db.db
+    os.system( "attrib +h db.db" )
+
     # to create tables if not exists
     res = cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='t1'")
     if res.fetchone() is None:
