@@ -69,7 +69,8 @@ class Ui_Form(object):
 
     def btn_clicked(self):
         self.date_inpt.setText(cf.date_format_reviser(self.date_inpt.text()))
-        if self.item_text != '' and self.count_inpt.text() != '' and cf.date_validator(self.date_inpt.text()) and self.price_inpt.text().isnumeric() and self.factor_inpt.text().isnumeric():
+        price = cf.separateor(self.price_inpt.text(), -1)
+        if self.item_text != '' and self.count_inpt.text() != '' and cf.date_validator(self.date_inpt.text()) and price.isnumeric() and self.factor_inpt.text().isnumeric():
             text_array = self.item_text.split()[2:]
             text = ''
             for t in text_array:
@@ -79,7 +80,7 @@ class Ui_Form(object):
             packed_count = str(int(fetchone[0]) - int(self.count_inpt.text()))
             sold_count = str(int(fetchone[1]) + int(self.count_inpt.text()))
 
-            data = (text, self.count_inpt.text(), self.date_inpt.text(), '23', self.price_inpt.text(), self.factor_inpt.text())
+            data = (text, self.count_inpt.text(), self.date_inpt.text(), '23', price, self.factor_inpt.text())
             self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data)
             history = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
 
@@ -99,21 +100,8 @@ class Ui_Form(object):
     def onEnter(self):
         pass
 
-    # def separator(self):
-    #     self.price_inpt.textChanged.disconnect()
-    #     current_text = self.price_inpt.text()
-    #     plain_current_text = current_text.replace(',', '')
-    #     new_text = plain_current_text
-    #     # if len(plain_current_text) % 3 == 1 and len(plain_current_text) != 1:
-    #     #     new_text = current_text[:-3] + ',' + current_text[-3:]
-    #     #     self.price_inpt.setText(new_text)
-    #     for i in reversed(range(len(plain_current_text))):
-    #         if len(plain_current_text) % 3 == 0 and len(plain_current_text) != 0:
-    #             new_text = new_text[:len(plain_current_text)-i] + ',' + new_text[len(plain_current_text)-i:]
-    #     if len(plain_current_text) <= 3:
-    #         new_text = plain_current_text
-    #     self.price_inpt.setText(new_text)
-    #     self.price_inpt.textChanged.connect(self.separator)
+    def separator(self):
+        self.price_inpt.setText(cf.separateor(self.price_inpt.text()))
 
     def setupUi(self, Form):
         global s
@@ -153,7 +141,7 @@ class Ui_Form(object):
         self.factor_inpt.setGeometry(QtCore.QRect(240, 70, 101, 31))
         self.factor_inpt.setObjectName("factor_inpt")
         self.price_inpt = QtWidgets.QLineEdit(Form)
-        # self.price_inpt.textChanged.connect(self.separator)
+        self.price_inpt.textChanged.connect(self.separator)
         self.price_inpt.setGeometry(QtCore.QRect(40, 70, 191, 31))
         self.price_inpt.setObjectName("price_inpt")
         self.search_recommendation()

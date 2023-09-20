@@ -76,8 +76,9 @@ class Ui_Form(object):
             text = text[0:len(text) - 1]
 
             if self.combo.currentText() == 'مرجوع فروش':
-                if self.price_inpt.text() != '' and self.factor_inpt.text() != '' and self.price_inpt.text().isnumeric() and self.factor_inpt.text().isnumeric():
-                    data = (text, self.count_inpt.text(), self.date_inpt.text(), '334', self.price_inpt.text(), self.factor_inpt.text())
+                price = cf.separateor(self.price_inpt.text(), -1)
+                if price != '' and self.factor_inpt.text() != '' and price.isnumeric() and self.factor_inpt.text().isnumeric():
+                    data = (text, self.count_inpt.text(), self.date_inpt.text(), '334', price, self.factor_inpt.text())
                     self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data)
                     history = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
 
@@ -119,6 +120,9 @@ class Ui_Form(object):
             self.factor_inpt.setEnabled(True)
             self.price_inpt.setEnabled(True)
 
+    def separator(self):
+        self.price_inpt.setText(cf.separateor(self.price_inpt.text()))
+
     def setupUi(self, Form):
         global s
         s = self
@@ -159,6 +163,7 @@ class Ui_Form(object):
         self.search_list.setViewMode(QtWidgets.QListView.ListMode)
         self.search_list.setObjectName("search_list")
         self.price_inpt = QtWidgets.QLineEdit(Form)
+        self.price_inpt.textChanged.connect(self.separator)
         self.price_inpt.setGeometry(QtCore.QRect(40, 70, 191, 31))
         self.price_inpt.setObjectName("price_inpt")
         self.factor_inpt = QtWidgets.QLineEdit(Form)

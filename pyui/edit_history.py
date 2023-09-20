@@ -72,9 +72,9 @@ class Ui_Form(object):
             self.tableWidget.setItem(i, 2, QTableWidgetItem(res[i][1]))
             self.tableWidget.setItem(i, 3, QTableWidgetItem(res[i][2]))
             self.tableWidget.setItem(i, 4, QTableWidgetItem(res[i][5]))
-            self.tableWidget.setItem(i, 5, QTableWidgetItem(res[i][4]))
+            self.tableWidget.setItem(i, 5, QTableWidgetItem(cf.separateor(res[i][4])))
         self.tableWidget.itemChanged.connect(self.item_edited)
-        self.tableWidget.itemSelectionChanged.connect(self.state_selection)
+        self.tableWidget.itemSelectionChanged.connect(self.selection_changed)
 
     def delete_dialog_clicked(self, dbutton):
         if dbutton.text() == 'OK':
@@ -109,17 +109,19 @@ class Ui_Form(object):
         else:
             cf.warning_dialog('ابتدا سطری که میخواهید حذف کنید را انتخاب کنید.')
 
-    def state_selection(self):
+    def selection_changed(self):
         row = self.tableWidget.currentRow()
         column = self.tableWidget.currentColumn()
-        rowIds = self.cur.execute("SELECT ROWID FROM t2 ORDER BY date").fetchall()
-        rowId = rowIds[row][0]
-        if column == 0:
+
+        if column == 0: # state
+            rowIds = self.cur.execute("SELECT ROWID FROM t2 ORDER BY date").fetchall()
+            rowId = rowIds[row][0]
             ex_name = self.ex_names_list[row][0]
             global rowId_to_edit_history, ex_name_to_edit_history
             rowId_to_edit_history = rowId
             ex_name_to_edit_history = ex_name
             self.edit_history_click()
+
     
     def item_edited(self, item):
         self.ex_names_list_generator()
@@ -173,7 +175,8 @@ class Ui_Form(object):
                 self.fill_table()
         else:
             if item.text().isnumeric():
-                self.cur.execute("UPDATE t2 SET price=? WHERE ROWID=?", (item.text(), rowId,))
+                price = cf.separateor(item.text(), -1)
+                self.cur.execute("UPDATE t2 SET price=? WHERE ROWID=?", (price, rowId,))
                 self.con.commit()
                 self.fill_table()
             else:

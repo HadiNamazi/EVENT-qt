@@ -19,13 +19,13 @@ def history_tracker(history):
             unpacked += int(i[1])
         elif i[3] == '12':
             if int(i[1]) > unpacked:
-                print(i)
+                # print(i)
                 return False
             unpacked -= int(i[1])
             packed += int(i[1])
         elif i[3] == '23':
             if int(i[1]) > packed:
-                print(i)
+                # print(i)
 
                 return False
             packed -= int(i[1])
@@ -33,19 +33,19 @@ def history_tracker(history):
         elif i[3][2] == '0':  # kasri
             if i[3][0] == '1':
                 if int(i[1]) > unpacked:
-                    print(i)
+                    # print(i)
 
                     return False
                 unpacked -= int(i[1])
             if i[3][0] == '2':
                 if int(i[1]) > packed:
-                    print(i)
+                    # print(i)
 
                     return False
                 packed -= int(i[1])
             if i[3][0] == '3':
                 if int(i[1]) > sold:
-                    print(i)
+                    # print(i)
 
                     return False
                 sold -= int(i[1])
@@ -58,21 +58,21 @@ def history_tracker(history):
                 sold += int(i[1])
         elif i[3][2] == '2':  # defective
             if int(i[1]) > unpacked:
-                print(i)
+                # print(i)
 
                 return False
             unpacked -= int(i[1])
             defective += int(i[1])
         elif i[3][2] == '3':  # returned_unpacked
             if int(i[1]) > defective:
-                print(i)
+                # print(i)
 
                 return False
             defective -= int(i[1])
             unpacked_returned += int(i[1])
         elif i[3][2] == '4': # returned_sold
             if int(i[1]) > sold:
-                print(i)
+                # print(i)
 
                 return False
             sold -= int(i[1])
@@ -219,3 +219,18 @@ def resource_path(relative_path):
         base_path = os.path.abspath(".")
 
     return os.path.join(base_path, relative_path)
+
+def separateor(price, operation=1):
+    if price == '' or price is None:
+        return ''
+    
+    price = price.replace(',', '')
+    
+    if not price.isnumeric():
+        return price[:-1]
+    
+    if operation == 1: # separate the price
+        price = int(price)
+        return f'{price:,}'
+    elif operation == -1: # restore price to the default form
+        return price

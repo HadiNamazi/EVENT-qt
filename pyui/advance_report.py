@@ -46,7 +46,7 @@ class Ui_Form(object):
         self.tableWidget.setItem(row, 2, QTableWidgetItem(res[i][1]))
         self.tableWidget.setItem(row, 3, QTableWidgetItem(res[i][2]))
         self.tableWidget.setItem(row, 4, QTableWidgetItem(res[i][5]))
-        self.tableWidget.setItem(row, 5, QTableWidgetItem(res[i][4]))
+        self.tableWidget.setItem(row, 5, QTableWidgetItem(cf.separateor(res[i][4])))
 
     def add_history_list_items(self):
         # to clear tableWidget
