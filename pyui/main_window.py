@@ -486,7 +486,7 @@ class Ui_MainWindow(QMainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "ایونت - صفحه اصلی"))
         self.label.setText(_translate("MainWindow", "کالاهای بسته بندی نشده"))
         self.label_2.setText(_translate("MainWindow", "کالاهای بسته بندی شده"))
-        self.label_6.setText(_translate("MainWindow", "V1.6"))
+        self.label_6.setText(_translate("MainWindow", "V1.8"))
         self.label_3.setText(_translate("MainWindow", "<html><head/><body><p><a href=\"https://github.com/HadiNamazi\"><span style=\" text-decoration: underline; color:#444444;\">Design &amp; Development by HadiNmz</span></a></p></body></html>"))
         self.menu.setTitle(_translate("MainWindow", "مدیریت کالاها"))
         self.menu_2.setTitle(_translate("MainWindow", "اطلاعات اولیه"))

@@ -20,6 +20,16 @@ class Ui_Form(object):
         self.name_inpt.clear()
         self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
         self.count_inpt.setValue(1)
+        
+    def keyboard_selection(self):
+        try:
+            self.item_text = self.search_list.currentItem().text()
+            
+            self.name_inpt.textChanged.disconnect()
+            self.name_inpt.setText(self.item_text)
+            self.name_inpt.textChanged.connect(self.search_recommendation)
+        except:
+            pass
 
     def search_recommendation(self):
         self.search_list.clear()
@@ -193,6 +203,7 @@ class Ui_Form(object):
         self.date_inpt.setGeometry(QtCore.QRect(370, 30, 91, 31))
         self.date_inpt.setObjectName("date_inpt")
         self.search_list = QtWidgets.QListWidget(Form)
+        self.search_list.currentRowChanged.connect(self.keyboard_selection)
         self.search_list.itemClicked.connect(self.item_clicked)
         self.search_list.setGeometry(QtCore.QRect(40, 80, 521, 351))
         self.search_list.setViewMode(QtWidgets.QListView.ListMode)

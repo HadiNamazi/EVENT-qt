@@ -28,6 +28,16 @@ class Ui_Form(object):
     def default(self):
         self.name_inpt.clear()
 
+    def keyboard_selection(self):
+        try:
+            self.item_text = self.search_list.currentItem().text()
+            
+            self.name_inpt.textChanged.disconnect()
+            self.name_inpt.setText(self.item_text)
+            self.name_inpt.textChanged.connect(self.search_recommendation)
+        except:
+            pass
+
     def simple_report_click(self):
         if self.item_text != '':
             text_array = self.item_text.split()[2:]
@@ -119,6 +129,7 @@ class Ui_Form(object):
         self.edit_btn.setFont(font)
         self.edit_btn.setObjectName("edit_btn")
         self.search_list = QtWidgets.QListWidget(Form)
+        self.search_list.currentRowChanged.connect(self.keyboard_selection)
         self.search_list.itemClicked.connect(self.item_clicked)
         self.search_list.setGeometry(QtCore.QRect(40, 80, 521, 351))
         self.search_list.setViewMode(QtWidgets.QListView.ListMode)

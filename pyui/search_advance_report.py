@@ -33,6 +33,16 @@ class Ui_Form(object):
         self.date_chck.setChecked(False)
         self.product_chck.setChecked(False)
 
+    def keyboard_selection(self):
+        try:
+            self.item_text = self.search_list.currentItem().text()
+            
+            self.name_inpt.textChanged.disconnect()
+            self.name_inpt.setText(self.item_text)
+            self.name_inpt.textChanged.connect(self.search_recommendation)
+        except:
+            pass
+
     def advance_report_click(self):
         if not self.advanceReportForm:
             self.advanceReportForm = AdvanceReportForm()
@@ -243,6 +253,7 @@ class Ui_Form(object):
         self.to_date_inpt.setClearButtonEnabled(False)
         self.to_date_inpt.setObjectName("to_date_inpt")
         self.search_list = QtWidgets.QListWidget(Form)
+        self.search_list.currentRowChanged.connect(self.keyboard_selection)
         self.search_list.itemClicked.connect(self.item_clicked)
         self.search_list.setEnabled(False)
         self.search_list.setGeometry(QtCore.QRect(40, 110, 521, 321))

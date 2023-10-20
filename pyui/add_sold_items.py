@@ -23,6 +23,16 @@ class Ui_Form(object):
         self.price_inpt.clear()
         self.factor_inpt.clear()
 
+    def keyboard_selection(self):
+        try:
+            self.item_text = self.search_list.currentItem().text()
+            
+            self.name_inpt.textChanged.disconnect()
+            self.name_inpt.setText(self.item_text)
+            self.name_inpt.textChanged.connect(self.search_recommendation)
+        except:
+            pass
+
     def search_recommendation(self):
         self.search_list.clear()
 
@@ -126,6 +136,7 @@ class Ui_Form(object):
         self.date_inpt.setGeometry(QtCore.QRect(350, 70, 101, 31))
         self.date_inpt.setObjectName("date_inpt")
         self.search_list = QtWidgets.QListWidget(Form)
+        self.search_list.currentRowChanged.connect(self.keyboard_selection)
         self.search_list.itemClicked.connect(self.item_clicked)
         self.search_list.setGeometry(QtCore.QRect(40, 110, 521, 321))
         self.search_list.setViewMode(QtWidgets.QListView.ListMode)
