@@ -112,7 +112,7 @@ def date_validator(date):
         if splitted_date[1] <= 6:  # 31day
             if splitted_date[2] <= 31:
                 return True
-        elif splitted_date[1] >= 7 and splitted_date[2] <= 11:  # 30day
+        elif splitted_date[1] >= 7 and splitted_date[1] <= 11:  # 30day
             if splitted_date[2] <= 30:
                 return True
         else:  # 29day
