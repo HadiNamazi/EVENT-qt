@@ -86,6 +86,26 @@ class Ui_Form(object):
             for t in text_array:
                 text += t + ' '
             text = text[0:len(text) - 1]
+
+            if self.direct_chck.isChecked():
+                # add_unpacked
+                fetchone = self.cur.execute("SELECT unpacked_count FROM t1 WHERE name=?", (text,)).fetchone()
+                unpacked_count = str(int(fetchone[0]) + int(self.count_inpt.text()))
+                data1 = (text, self.count_inpt.text(), self.date_inpt.text(), '01', None, None)
+                data2 = (unpacked_count, text)
+                self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data1)
+                self.cur.execute("UPDATE t1 SET unpacked_count=? WHERE name=?", data2)
+                self.con.commit()
+                # add_packed
+                fetchone = self.cur.execute("SELECT packed_count, unpacked_count FROM t1 WHERE name=?", (text,)).fetchone()
+                packed_count = str(int(fetchone[0]) + int(self.count_inpt.text()))
+                unpacked_count = str(int(fetchone[1]) - int(self.count_inpt.text()))
+                data = (text, self.count_inpt.text(), self.date_inpt.text(), '12', None, None)
+                self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data)
+                data = (packed_count, unpacked_count, text)
+                self.cur.execute("UPDATE t1 SET packed_count=?, unpacked_count=? WHERE name=?", data)
+                self.con.commit()
+
             fetchone = self.cur.execute("SELECT packed_count, sold_count FROM t1 WHERE name=?", (text,)).fetchone()
             packed_count = str(int(fetchone[0]) - int(self.count_inpt.text()))
             sold_count = str(int(fetchone[1]) + int(self.count_inpt.text()))
@@ -119,7 +139,7 @@ class Ui_Form(object):
         Form.setObjectName("Form")
         Form.setFixedSize(600, 506)
         self.count_inpt = QtWidgets.QSpinBox(Form)
-        self.count_inpt.setGeometry(QtCore.QRect(460, 70, 101, 31))
+        self.count_inpt.setGeometry(QtCore.QRect(490, 70, 71, 31))
         self.count_inpt.setMinimum(1)
         self.count_inpt.setMaximum(1000000)
         self.count_inpt.setProperty("value", 1)
@@ -133,7 +153,7 @@ class Ui_Form(object):
         self.name_inpt.setObjectName("name_inpt")
         self.date_inpt = QtWidgets.QLineEdit(Form)
         self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
-        self.date_inpt.setGeometry(QtCore.QRect(350, 70, 101, 31))
+        self.date_inpt.setGeometry(QtCore.QRect(380, 70, 101, 31))
         self.date_inpt.setObjectName("date_inpt")
         self.search_list = QtWidgets.QListWidget(Form)
         self.search_list.currentRowChanged.connect(self.keyboard_selection)
@@ -149,12 +169,15 @@ class Ui_Form(object):
         self.add_btn.setFont(font)
         self.add_btn.setObjectName("add_btn")
         self.factor_inpt = QtWidgets.QLineEdit(Form)
-        self.factor_inpt.setGeometry(QtCore.QRect(240, 70, 101, 31))
+        self.factor_inpt.setGeometry(QtCore.QRect(270, 70, 101, 31))
         self.factor_inpt.setObjectName("factor_inpt")
         self.price_inpt = QtWidgets.QLineEdit(Form)
         self.price_inpt.textChanged.connect(self.separator)
-        self.price_inpt.setGeometry(QtCore.QRect(40, 70, 191, 31))
+        self.price_inpt.setGeometry(QtCore.QRect(160, 70, 101, 31))
         self.price_inpt.setObjectName("price_inpt")
+        self.direct_chck = QtWidgets.QCheckBox(Form)
+        self.direct_chck.setGeometry(QtCore.QRect(40, 80, 121, 17))
+        self.direct_chck.setObjectName("checkBox")
         self.search_recommendation()
 
         QtWidgets.QWidget.setTabOrder(self.name_inpt, self.search_list)
@@ -175,6 +198,7 @@ class Ui_Form(object):
         self.add_btn.setText(_translate("Form", "ثبت"))
         self.factor_inpt.setPlaceholderText(_translate("Form", "شماره فاکتور"))
         self.price_inpt.setPlaceholderText(_translate("Form", "قیمت"))
+        self.direct_chck.setText(_translate("Form", "ثبت مستقیم فروش"))
 
 
 if __name__ == "__main__":

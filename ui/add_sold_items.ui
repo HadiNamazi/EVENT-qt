@@ -16,9 +16,9 @@
   <widget class="QSpinBox" name="count_inpt">
    <property name="geometry">
     <rect>
-     <x>460</x>
+     <x>490</x>
      <y>70</y>
-     <width>101</width>
+     <width>71</width>
      <height>31</height>
     </rect>
    </property>
@@ -57,7 +57,7 @@
   <widget class="QLineEdit" name="date_inpt">
    <property name="geometry">
     <rect>
-     <x>350</x>
+     <x>380</x>
      <y>70</y>
      <width>101</width>
      <height>31</height>
@@ -101,7 +101,7 @@
   <widget class="QLineEdit" name="factor_inpt">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>270</x>
      <y>70</y>
      <width>101</width>
      <height>31</height>
@@ -114,14 +114,27 @@
   <widget class="QLineEdit" name="price_inpt">
    <property name="geometry">
     <rect>
-     <x>40</x>
+     <x>160</x>
      <y>70</y>
-     <width>191</width>
+     <width>101</width>
      <height>31</height>
     </rect>
    </property>
    <property name="placeholderText">
     <string>قیمت</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBox">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>80</y>
+     <width>121</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>ثبت مستقیم فروش</string>
    </property>
   </widget>
  </widget>
