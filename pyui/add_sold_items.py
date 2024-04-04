@@ -15,13 +15,21 @@ class Ui_Form(object):
     cur = con.cursor()
 
     item_text = ''
+    prev_date = ''
+    prev_factor = ''
 
     def default(self):
         self.name_inpt.clear()
-        self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
+        if self.prev_date == '':
+            self.date_inpt.setText(jdatetime.datetime.now().strftime('%Y/%m/%d'))
+        else:
+            self.date_inpt.setText(self.prev_date)
+        if self.prev_factor == '':
+            self.factor_inpt.clear()
+        else:
+            self.factor_inpt.setText(self.prev_factor)
         self.count_inpt.setValue(1)
         self.price_inpt.clear()
-        self.factor_inpt.clear()
 
     def keyboard_selection(self):
         try:
@@ -125,6 +133,8 @@ class Ui_Form(object):
             self.item_text = ''
         else:
             cf.warning_dialog('اطلاعات وارد شده معتبر نیست.')
+        self.prev_date = self.date_inpt.text()
+        self.prev_factor = self.factor_inpt.text()
         self.default()
 
     def onEnter(self):
