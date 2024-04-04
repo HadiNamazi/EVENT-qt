@@ -95,42 +95,45 @@ class Ui_Form(object):
                 text += t + ' '
             text = text[0:len(text) - 1]
 
-            if self.direct_chck.isChecked():
-                # add_unpacked
-                fetchone = self.cur.execute("SELECT unpacked_count FROM t1 WHERE name=?", (text,)).fetchone()
-                unpacked_count = str(int(fetchone[0]) + int(self.count_inpt.text()))
-                data1 = (text, self.count_inpt.text(), self.date_inpt.text(), '01', None, None)
-                data2 = (unpacked_count, text)
-                self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data1)
-                self.cur.execute("UPDATE t1 SET unpacked_count=? WHERE name=?", data2)
-                self.con.commit()
-                # add_packed
-                fetchone = self.cur.execute("SELECT packed_count, unpacked_count FROM t1 WHERE name=?", (text,)).fetchone()
-                packed_count = str(int(fetchone[0]) + int(self.count_inpt.text()))
-                unpacked_count = str(int(fetchone[1]) - int(self.count_inpt.text()))
-                data = (text, self.count_inpt.text(), self.date_inpt.text(), '12', None, None)
+            if not cf.sold_duplicate_check(text, self.factor_inpt.text()):
+                if self.direct_chck.isChecked():
+                    # add_unpacked
+                    fetchone = self.cur.execute("SELECT unpacked_count FROM t1 WHERE name=?", (text,)).fetchone()
+                    unpacked_count = str(int(fetchone[0]) + int(self.count_inpt.text()))
+                    data1 = (text, self.count_inpt.text(), self.date_inpt.text(), '01', None, None)
+                    data2 = (unpacked_count, text)
+                    self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data1)
+                    self.cur.execute("UPDATE t1 SET unpacked_count=? WHERE name=?", data2)
+                    self.con.commit()
+                    # add_packed
+                    fetchone = self.cur.execute("SELECT packed_count, unpacked_count FROM t1 WHERE name=?", (text,)).fetchone()
+                    packed_count = str(int(fetchone[0]) + int(self.count_inpt.text()))
+                    unpacked_count = str(int(fetchone[1]) - int(self.count_inpt.text()))
+                    data = (text, self.count_inpt.text(), self.date_inpt.text(), '12', None, None)
+                    self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data)
+                    data = (packed_count, unpacked_count, text)
+                    self.cur.execute("UPDATE t1 SET packed_count=?, unpacked_count=? WHERE name=?", data)
+                    self.con.commit()
+
+                fetchone = self.cur.execute("SELECT packed_count, sold_count FROM t1 WHERE name=?", (text,)).fetchone()
+                packed_count = str(int(fetchone[0]) - int(self.count_inpt.text()))
+                sold_count = str(int(fetchone[1]) + int(self.count_inpt.text()))
+
+                data = (text, self.count_inpt.text(), self.date_inpt.text(), '23', price, self.factor_inpt.text())
                 self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data)
-                data = (packed_count, unpacked_count, text)
-                self.cur.execute("UPDATE t1 SET packed_count=?, unpacked_count=? WHERE name=?", data)
-                self.con.commit()
+                history = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
 
-            fetchone = self.cur.execute("SELECT packed_count, sold_count FROM t1 WHERE name=?", (text,)).fetchone()
-            packed_count = str(int(fetchone[0]) - int(self.count_inpt.text()))
-            sold_count = str(int(fetchone[1]) + int(self.count_inpt.text()))
-
-            data = (text, self.count_inpt.text(), self.date_inpt.text(), '23', price, self.factor_inpt.text())
-            self.cur.execute("INSERT INTO t2 VALUES(?, ?, ?, ?, ?, ?)", data)
-            history = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
-
-            if cf.check_conflict(history, text):
-                data = (packed_count, sold_count, text)
-                self.cur.execute("UPDATE t1 SET packed_count=?, sold_count=? WHERE name=?", data)
-                self.con.commit()
-                mw.Ui_MainWindow.status_lbl(mw.s)
+                if cf.check_conflict(history, text):
+                    data = (packed_count, sold_count, text)
+                    self.cur.execute("UPDATE t1 SET packed_count=?, sold_count=? WHERE name=?", data)
+                    self.con.commit()
+                    mw.Ui_MainWindow.status_lbl(mw.s)
+                else:
+                    self.con.rollback()
+                    cf.warning_dialog('تعداد کالای بسته بندی شده این محصول کافی نیست.')
+                self.item_text = ''
             else:
-                self.con.rollback()
-                cf.warning_dialog('تعداد کالای بسته بندی شده این محصول کافی نیست.')
-            self.item_text = ''
+                cf.warning_dialog('قبلا فروش این کالا در این شماره فاکتور ثبت شده است.')
         else:
             cf.warning_dialog('اطلاعات وارد شده معتبر نیست.')
         self.prev_date = self.date_inpt.text()
