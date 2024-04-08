@@ -133,8 +133,9 @@ class Ui_Form(object):
 
         if column == 1:
             self.cur.execute("UPDATE t2 SET name=? WHERE ROWID=?", (item.text(), rowId,))
+            fetchone = self.cur.execute("SELECT factor, action FROM t2 WHERE ROWID=?", (rowId,)).fetchone()
             reslist = self.cur.execute("SELECT * FROM t2 ORDER BY date").fetchall()
-            if cf.check_conflict(reslist, item.text()) and cf.check_conflict(reslist, ex_name):
+            if cf.check_conflict(reslist, item.text()) and cf.check_conflict(reslist, ex_name) and (fetchone[1][:2] != '23' or not cf.sold_duplicate_check(item.text(), fetchone[0])):
                 self.con.commit()
                 cf.update_t1(item.text())
                 cf.update_t1(ex_name)
@@ -168,8 +169,13 @@ class Ui_Form(object):
         elif column == 4:
             if item.text().isnumeric():
                 self.cur.execute("UPDATE t2 SET factor=? WHERE ROWID=?", (item.text(), rowId,))
-                self.con.commit()
-                self.fill_table()
+                name = self.cur.execute("SELECT name FROM t2 WHERE ROWID=?", (rowId,)).fetchone()[0]
+                if not cf.sold_duplicate_check(name, item.text()):
+                    self.con.commit()
+                    self.fill_table()
+                else:
+                    cf.warning_dialog('این کالا با این شماره فاکتور قبلا ثبت شده!')
+                    self.fill_table()
             else:
                 cf.warning_dialog('شماره فاکتور باید متشکل از اعداد باشد.\nدوباره تلاش کنید.')
                 self.fill_table()

@@ -237,10 +237,7 @@ def separateor(price, operation=1):
     
 def sold_duplicate_check(name, factor):
     factors = cur.execute("SELECT factor FROM t2 WHERE name=?", (name,)).fetchall()
-    print(factors, factor)
     for f in factors:
         if factor == f[0]:
-            print('True')
             return True
-    print('False')
     return False
